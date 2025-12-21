@@ -11,11 +11,13 @@ Development plan for Basic Viewer functionality. Enables loading, parsing, and r
 - [ ] Install VueUse for composition utilities
 - [ ] Install vite-plugin-wasm for WASM module loading
 - [ ] Configure Vite for WASM support
+- [ ] Setup Emscripten with emdawnwebgpu port for WebGPU support in WASM
 
 ### WASM Module Setup
 - [ ] Initialize C++ WASM project with Emscripten
 - [ ] Create WASM module structure (wasm/src/, wasm/pkg/)
-- [ ] Setup build configuration (Emscripten compilation)
+- [ ] Setup build configuration (Emscripten compilation with emdawnwebgpu support)
+- [ ] Compile gsr C++ render engine to WASM using Emscripten with emdawnwebgpu port
 - [ ] Implement WASM module loader (src/core/loader/WASMLoader.ts)
 
 ### PLY File Parser
@@ -27,12 +29,13 @@ Development plan for Basic Viewer functionality. Enables loading, parsing, and r
 - [ ] Transfer parsed data from WASM to JavaScript (typed arrays)
 
 ### gsr Render Engine Integration
-- [ ] Integrate gsr render engine into project
-- [ ] Create GSRRenderer wrapper (src/core/renderer/gsr/GSRRenderer.ts)
-- [ ] Initialize WebGPU renderer in gsr
-- [ ] Create GPU buffers for splat data (position, rotation, scale, color, opacity)
-- [ ] Implement instanced rendering pipeline
-- [ ] Setup shader management for Gaussian Splatting
+- [ ] Integrate gsr C++ render engine (compile to WASM with emdawnwebgpu)
+- [ ] Create GSRRenderer JavaScript wrapper (src/core/renderer/gsr/GSRRenderer.ts)
+- [ ] Create TypeScript bindings for WASM renderer module
+- [ ] Initialize WebGPU renderer in WASM (gsr via emdawnwebgpu → WebGPU device/context)
+- [ ] Create GPU buffers in WASM for splat data (position, rotation, scale, color, opacity)
+- [ ] Implement instanced rendering pipeline in WASM
+- [ ] Setup shader management for Gaussian Splatting in WASM
 
 ### Camera Controls
 - [ ] Implement orbit camera controls (rotate around center)
@@ -61,10 +64,10 @@ Development plan for Basic Viewer functionality. Enables loading, parsing, and r
 
 ## Development Workflow
 
-**Setup:** `npm install pinia @vueuse/core vite-plugin-wasm -D` (Emscripten for C++ WASM)
+**Setup:** `npm install pinia @vueuse/core vite-plugin-wasm -D` (Emscripten with emdawnwebgpu port for C++ WASM WebGPU rendering)
 
 **Commands:** `npm run dev` (development), `npm run build` (build)
 
 ## Deliverables
 
-PLY file loader (WASM parser), WebGPU renderer (gsr), camera controls (orbit/pan/zoom), drag-and-drop interface, error handling
+PLY file loader (WASM parser), WebGPU renderer (gsr C++ engine compiled to WASM via emdawnwebgpu), camera controls (orbit/pan/zoom), drag-and-drop interface, error handling
