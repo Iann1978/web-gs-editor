@@ -2,15 +2,15 @@
 
 ## Project Overview
 
-Web-based 3D Gaussian Splatting editor built with Vue 3 and TypeScript, enabling users to load, view, edit, and export Gaussian splat files in the browser. Uses WebGPU for rendering through WebAssembly (gsr C++ render engine compiled to WASM via emdawnwebgpu) and WebAssembly for performance-critical operations.
+Web-based 3D Gaussian Splatting editor built with Vue 3 and TypeScript, enabling users to load, view, edit, and export Gaussian splat files in the browser. Uses WebGPU for rendering through WebAssembly (gsr C++ render engine compiled to WASM via Emscripten SDK WebGPU API) and WebAssembly for performance-critical operations.
 
 ## Technology Stack
 
 **Frontend:** Vue 3 (Composition API), TypeScript, Vite, Pinia, Vuetify/Element Plus
 
-**3D Rendering:** gsr (self-developed C++ render engine compiled to WASM), emdawnwebgpu, WebGPU
+**3D Rendering:** gsr (self-developed C++ render engine compiled to WASM), Emscripten SDK WebGPU bindings, WebGPU
 
-**WebAssembly:** C++ with Emscripten for rendering (gsr render engine), PLY parsing, spatial indexing (octree/k-d tree), raycasting, transform computations, bulk data processing. WebGPU rendering operations are performed in WASM via emdawnwebgpu bindings.
+**WebAssembly:** C++ with Emscripten for rendering (gsr render engine), PLY parsing, spatial indexing (octree/k-d tree), raycasting, transform computations, bulk data processing. WebGPU rendering operations are performed in WASM via Emscripten SDK WebGPU API bindings.
 
 **Development:** ESLint, Prettier, Vitest, vite-plugin-wasm
 
@@ -49,9 +49,9 @@ gs-editor-web/
 
 **Splat Format:** Position (vec3), Rotation (vec4 quaternion), Scale (vec3), Opacity (float), Color (vec3 RGB or spherical harmonics)
 
-**Rendering Pipeline:** Load (PLY → WASM Parser → Splat Data) → Initialize (WASM Renderer init via emdawnwebgpu → WebGPU device/context) → Upload (WASM creates GPU buffers → instanced rendering setup) → Render (camera update → WASM culling/sorting → WASM renderer draw via emdawnwebgpu → WebGPU) → Interaction (ray → WASM raycast → selection → gizmos)
+**Rendering Pipeline:** Load (PLY → WASM Parser → Splat Data) → Initialize (WASM Renderer init via Emscripten SDK WebGPU API → WebGPU device/context) → Upload (WASM creates GPU buffers → instanced rendering setup) → Render (camera update → WASM culling/sorting → WASM renderer draw via Emscripten SDK WebGPU API → WebGPU) → Interaction (ray → WASM raycast → selection → gizmos)
 
-**WASM Modules:** Renderer (gsr C++ engine compiled to WASM, uses emdawnwebgpu for WebGPU access, handles GPU buffer creation, shader management, rendering commands), Parser (PLY parsing/validation), Spatial (octree/k-d tree, queries, culling), Math (raycasting, transforms, vectors/quaternions), Processing (filtering, sorting, bulk transforms)
+**WASM Modules:** Renderer (gsr C++ engine compiled to WASM, uses Emscripten SDK WebGPU API for WebGPU access, handles GPU buffer creation, shader management, rendering commands), Parser (PLY parsing/validation), Spatial (octree/k-d tree, queries, culling), Math (raycasting, transforms, vectors/quaternions), Processing (filtering, sorting, bulk transforms)
 
 **Algorithms:** Raycasting (WASM projects ray, checks bounding spheres, returns closest), Spatial Indexing (WASM maintains octree/k-d tree), Transparency (depth sort, back-to-front render)
 
