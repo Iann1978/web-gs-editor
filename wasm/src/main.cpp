@@ -6,71 +6,14 @@
 #endif
 #include <dawn/webgpu_cpp_print.h>
 #include <webgpu/webgpu_cpp.h>
-#include <webgpu/webgpu_glfw.h>
+#include "WebGPUContext.h"
 
-wgpu::Instance instance;
-wgpu::Adapter adapter;
-wgpu::Device device;
-wgpu::RenderPipeline pipeline;
+WebGPUContext* g_context = nullptr;
+wgpu::RenderPipeline g_pipeline;
+GLFWwindow* g_window = nullptr;
 
-wgpu::Surface surface;
-wgpu::TextureFormat format;
 const uint32_t kWidth = 512;
 const uint32_t kHeight = 512;
-
-// Flag to track initialization status
-bool isWebGPUInitialized = false;
-
-void ConfigureSurface() {
-  wgpu::SurfaceCapabilities capabilities;
-  surface.GetCapabilities(adapter, &capabilities);
-  format = capabilities.formats[0];
-
-  wgpu::SurfaceConfiguration config{.device = device,
-                                    .format = format,
-                                    .width = kWidth,
-                                    .height = kHeight};
-  surface.Configure(&config);
-}
-
-void Init() {
-  static const auto kTimedWaitAny = wgpu::InstanceFeatureName::TimedWaitAny;
-  wgpu::InstanceDescriptor instanceDesc{.requiredFeatureCount = 1,
-                                        .requiredFeatures = &kTimedWaitAny};
-  instance = wgpu::CreateInstance(&instanceDesc);
-
-  wgpu::Future f1 = instance.RequestAdapter(
-      nullptr, wgpu::CallbackMode::WaitAnyOnly,
-      [](wgpu::RequestAdapterStatus status, wgpu::Adapter a,
-         wgpu::StringView message) {
-        if (status != wgpu::RequestAdapterStatus::Success) {
-          std::cout << "RequestAdapter: " << message << "\n";
-          exit(0);
-        }
-        adapter = std::move(a);
-      });
-  instance.WaitAny(f1, UINT64_MAX);
-
-  wgpu::DeviceDescriptor desc{};
-  desc.SetUncapturedErrorCallback([](const wgpu::Device&,
-                                     wgpu::ErrorType errorType,
-                                     wgpu::StringView message) {
-    std::cout << "Error: " << errorType << " - message: " << message << "\n";
-  });
-
-  wgpu::Future f2 = adapter.RequestDevice(
-      &desc, wgpu::CallbackMode::WaitAnyOnly,
-      [](wgpu::RequestDeviceStatus status, wgpu::Device d,
-         wgpu::StringView message) {
-        if (status != wgpu::RequestDeviceStatus::Success) {
-          std::cout << "RequestDevice: " << message << "\n";
-          exit(0);
-        }
-        device = std::move(d);
-      });
-  instance.WaitAny(f2, UINT64_MAX);
-  isWebGPUInitialized = true;  // Mark as initialized after device is ready
-}
 
 const char shaderCode[] = R"(
     @vertex fn vertexMain(@builtin(vertex_index) i : u32) ->
@@ -79,30 +22,17 @@ const char shaderCode[] = R"(
         return vec4f(pos[i], 0, 1);
     }
     @fragment fn fragmentMain() -> @location(0) vec4f {
-        return vec4f(1, 0, 0, 1);
+        return vec4f(1, 1, 0, 1);
     }
 )";
 
 void CreateRenderPipeline() {
-  wgpu::ShaderSourceWGSL wgsl{{.code = shaderCode}};
-
-  wgpu::ShaderModuleDescriptor shaderModuleDescriptor{.nextInChain = &wgsl};
-  wgpu::ShaderModule shaderModule =
-      device.CreateShaderModule(&shaderModuleDescriptor);
-
-  wgpu::ColorTargetState colorTargetState{.format = format};
-
-  wgpu::FragmentState fragmentState{
-      .module = shaderModule, .targetCount = 1, .targets = &colorTargetState};
-
-  wgpu::RenderPipelineDescriptor descriptor{.vertex = {.module = shaderModule},
-                                            .fragment = &fragmentState};
-  pipeline = device.CreateRenderPipeline(&descriptor);
+  auto shaderModule = g_context->CreateShaderModule(shaderCode);
+  g_pipeline = g_context->CreateRenderPipeline(shaderModule, g_context->format);
 }
 
 void Render() {
-  wgpu::SurfaceTexture surfaceTexture;
-  surface.GetCurrentTexture(&surfaceTexture);
+  wgpu::SurfaceTexture surfaceTexture = g_context->GetCurrentSurfaceTexture();
 
   wgpu::RenderPassColorAttachment attachment{
       .view = surfaceTexture.texture.CreateView(),
@@ -112,18 +42,13 @@ void Render() {
   wgpu::RenderPassDescriptor renderpass{.colorAttachmentCount = 1,
                                         .colorAttachments = &attachment};
 
-  wgpu::CommandEncoder encoder = device.CreateCommandEncoder();
+  wgpu::CommandEncoder encoder = g_context->CreateCommandEncoder();
   wgpu::RenderPassEncoder pass = encoder.BeginRenderPass(&renderpass);
-  pass.SetPipeline(pipeline);
+  pass.SetPipeline(g_pipeline);
   pass.Draw(3);
   pass.End();
   wgpu::CommandBuffer commands = encoder.Finish();
-  device.GetQueue().Submit(1, &commands);
-}
-
-void InitGraphics() {
-  ConfigureSurface();
-  CreateRenderPipeline();
+  g_context->SubmitCommandBuffer(commands);
 }
 
 void Start() {
@@ -132,20 +57,20 @@ void Start() {
   }
 
   glfwWindowHint(GLFW_CLIENT_API, GLFW_NO_API);
-  GLFWwindow* window =
-      glfwCreateWindow(kWidth, kHeight, "WebGPU window", nullptr, nullptr);
-  surface = wgpu::glfw::CreateSurfaceForWindow(instance, window);
-
-  InitGraphics();
+  g_window = glfwCreateWindow(kWidth, kHeight, "WebGPU window", nullptr, nullptr);
+  
+  g_context->CreateSurface(g_window);
+  g_context->ConfigureSurface();
+  CreateRenderPipeline();
 
 #if defined(__EMSCRIPTEN__)
   emscripten_set_main_loop(Render, 0, false);
 #else
-  while (!glfwWindowShouldClose(window)) {
+  while (!glfwWindowShouldClose(g_window)) {
     glfwPollEvents();
     Render();
-    surface.Present();
-    instance.ProcessEvents();
+    g_context->Present();
+    g_context->ProcessEvents();
   }
 #endif
 }
@@ -153,11 +78,12 @@ void Start() {
 // Export Init() and Start() for manual calling from JavaScript
 extern "C" {
   void InitWebGPU() {
-    Init();
+    g_context = new WebGPUContext();
+    g_context->Initialize();
   }
 
   int IsWebGPUInitialized() {
-    return isWebGPUInitialized ? 1 : 0;
+    return (g_context && g_context->isInitialized) ? 1 : 0;
   }
 
   void StartWebGPU() {
