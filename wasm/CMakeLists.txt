@@ -13,6 +13,7 @@ add_subdirectory("dawn" EXCLUDE_FROM_ALL)
 set(APP_SOURCES
     src/gsr/main.cpp
     src/gsr/WebGPUContext.cpp
+    src/gsr/VertexAttribute.cpp
 )
 
 # Source files for test (simple WASM module)
