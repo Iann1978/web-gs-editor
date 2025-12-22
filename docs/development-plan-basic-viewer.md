@@ -7,7 +7,7 @@ Development plan for Basic Viewer functionality. Enables loading, parsing, and r
 ## Development Tasks (Week 1-2)
 
 ### Dependencies Setup
-- [ ] Install Pinia for state management
+- [✓] Install Pinia for state management
 - [ ] Install VueUse for composition utilities
 - [ ] Install vite-plugin-wasm for WASM module loading
 - [ ] Configure Vite for WASM support
