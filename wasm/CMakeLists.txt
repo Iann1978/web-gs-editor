@@ -36,8 +36,8 @@ if(EMSCRIPTEN)
     target_link_options(app PRIVATE 
         "-sASYNCIFY=1" 
         "-sUSE_GLFW=3"
-        # Export main() so it can be called manually
-        "-sEXPORTED_FUNCTIONS=[\"_main\"]"
+        # Export Init(), Start(), and IsWebGPUInitialized() functions for manual calling
+        "-sEXPORTED_FUNCTIONS=[\"_InitWebGPU\",\"_IsWebGPUInitialized\",\"_StartWebGPU\"]"
         # Export runtime methods for calling functions
         "-sEXPORTED_RUNTIME_METHODS=[\"ccall\",\"cwrap\"]"
     )

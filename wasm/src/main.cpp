@@ -18,6 +18,9 @@ wgpu::TextureFormat format;
 const uint32_t kWidth = 512;
 const uint32_t kHeight = 512;
 
+// Flag to track initialization status
+bool isWebGPUInitialized = false;
+
 void ConfigureSurface() {
   wgpu::SurfaceCapabilities capabilities;
   surface.GetCapabilities(adapter, &capabilities);
@@ -66,6 +69,7 @@ void Init() {
         device = std::move(d);
       });
   instance.WaitAny(f2, UINT64_MAX);
+  isWebGPUInitialized = true;  // Mark as initialized after device is ready
 }
 
 const char shaderCode[] = R"(
@@ -146,7 +150,19 @@ void Start() {
 #endif
 }
 
-int main() {
-  Init();
-  Start();
+// Export Init() and Start() for manual calling from JavaScript
+extern "C" {
+  void InitWebGPU() {
+    Init();
+  }
+
+  int IsWebGPUInitialized() {
+    return isWebGPUInitialized ? 1 : 0;
+  }
+
+  void StartWebGPU() {
+    Start();
+  }
 }
+
+// main() removed - Init() and Start() are now called manually from JavaScript

@@ -42,26 +42,62 @@ onMounted(async () => {
         error.value = errorMessage
         loading.value = false
       },
-      onInitialized: (module: any) => {
+      onInitialized: async (module: any) => {
         console.log('WASM module initialized and ready to use')
         
-        // Manually call main() now that the module is initialized
+        // Manually call Init() and Start() now that the module is initialized
         try {
-          // Method 1: Direct call via _main (if available)
-          if (module._main) {
-            console.log('Calling main() via _main...')
-            module._main(0, 0)  // argc=0, argv=0
+          // Call InitWebGPU() first
+          if (module._InitWebGPU) {
+            console.log('Calling InitWebGPU()...')
+            module._InitWebGPU()
+          } else if (module.ccall) {
+            console.log('Calling InitWebGPU() via ccall...')
+            module.ccall('InitWebGPU', null, [])
+          } else {
+            console.warn('InitWebGPU() function not found. Make sure it is exported in CMakeLists.txt')
+            return
           }
-          // Method 2: Using ccall (alternative)
-          else if (module.ccall) {
-            console.log('Calling main() via ccall...')
-            module.ccall('main', 'number', ['number', 'number'], [0, 0])
+
+          // Poll until initialization is complete
+          const checkInitialized = (): boolean => {
+            if (module._IsWebGPUInitialized) {
+              return module._IsWebGPUInitialized() === 1
+            } else if (module.ccall) {
+              return module.ccall('IsWebGPUInitialized', 'number', []) === 1
+            }
+            return false
           }
-          else {
-            console.warn('main() function not found. Make sure it is exported in CMakeLists.txt')
+
+          // Wait for initialization with timeout
+          let attempts = 0
+          const maxAttempts = 100  // 10 seconds max (100 * 100ms)
+          const pollInterval = 100  // 100ms between checks
+
+          console.log('Waiting for WebGPU initialization...')
+          while (!checkInitialized() && attempts < maxAttempts) {
+            await new Promise(resolve => setTimeout(resolve, pollInterval))
+            attempts++
+          }
+
+          if (!checkInitialized()) {
+            throw new Error('WebGPU initialization timed out after 10 seconds')
+          }
+
+          console.log('WebGPU initialization complete, starting render loop...')
+
+          // Then call StartWebGPU()
+          if (module._StartWebGPU) {
+            console.log('Calling StartWebGPU()...')
+            module._StartWebGPU()
+          } else if (module.ccall) {
+            console.log('Calling StartWebGPU() via ccall...')
+            module.ccall('StartWebGPU', null, [])
+          } else {
+            console.warn('StartWebGPU() function not found. Make sure it is exported in CMakeLists.txt')
           }
         } catch (err) {
-          console.error('Error calling main():', err)
+          console.error('Error initializing WebGPU:', err)
           error.value = `Failed to start WebGPU: ${err instanceof Error ? err.message : 'Unknown error'}`
         }
       }
