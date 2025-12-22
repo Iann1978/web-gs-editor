@@ -11,8 +11,8 @@ add_subdirectory("dawn" EXCLUDE_FROM_ALL)
 
 # Source files for app (WebGPU)
 set(APP_SOURCES
-    src/main.cpp
-    src/WebGPUContext.cpp
+    src/gsr/main.cpp
+    src/gsr/WebGPUContext.cpp
 )
 
 # Source files for test (simple WASM module)
