@@ -33,7 +33,14 @@ if(EMSCRIPTEN)
     # Configure app target (non-modularized for direct script loading)
     set_target_properties(app PROPERTIES SUFFIX ".js")
     target_link_libraries(app PRIVATE emdawnwebgpu_cpp webgpu_glfw)
-    target_link_options(app PRIVATE "-sASYNCIFY=1" "-sUSE_GLFW=3")
+    target_link_options(app PRIVATE 
+        "-sASYNCIFY=1" 
+        "-sUSE_GLFW=3"
+        # Export main() so it can be called manually
+        "-sEXPORTED_FUNCTIONS=[\"_main\"]"
+        # Export runtime methods for calling functions
+        "-sEXPORTED_RUNTIME_METHODS=[\"ccall\",\"cwrap\"]"
+    )
     
     # Configure test target (modularized ES6 module)
     set_target_properties(test PROPERTIES SUFFIX ".js")

@@ -42,12 +42,28 @@ onMounted(async () => {
         error.value = errorMessage
         loading.value = false
       },
-      onInitialized: () => {
+      onInitialized: (module: any) => {
         console.log('WASM module initialized and ready to use')
-        // You can now access exported functions via:
-        // EmscriptenWasmModule.module.someFunction()
-        // or
-        // EmscriptenWasmModule.getExportedFunction('someFunction')()
+        
+        // Manually call main() now that the module is initialized
+        try {
+          // Method 1: Direct call via _main (if available)
+          if (module._main) {
+            console.log('Calling main() via _main...')
+            module._main(0, 0)  // argc=0, argv=0
+          }
+          // Method 2: Using ccall (alternative)
+          else if (module.ccall) {
+            console.log('Calling main() via ccall...')
+            module.ccall('main', 'number', ['number', 'number'], [0, 0])
+          }
+          else {
+            console.warn('main() function not found. Make sure it is exported in CMakeLists.txt')
+          }
+        } catch (err) {
+          console.error('Error calling main():', err)
+          error.value = `Failed to start WebGPU: ${err instanceof Error ? err.message : 'Unknown error'}`
+        }
       }
     })
   } catch (err) {

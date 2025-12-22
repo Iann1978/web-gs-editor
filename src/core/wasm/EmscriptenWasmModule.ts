@@ -11,6 +11,7 @@ export interface EmscriptenModuleConfig {
 export class EmscriptenWasmModule {
   private static _module: any = undefined
   private static _scriptElement: HTMLScriptElement | null = null
+  private static _config: EmscriptenModuleConfig | undefined = undefined
 
   static get module(): any {
     return this._module
@@ -21,6 +22,8 @@ export class EmscriptenWasmModule {
   }
 
   static async init(config: EmscriptenModuleConfig): Promise<void> {
+    this._config = config
+
     // Check if WebGPU is supported (if needed)
     if (config.canvas && !('gpu' in navigator)) {
       const error = 'WebGPU is not supported in this browser'
@@ -34,6 +37,8 @@ export class EmscriptenWasmModule {
         console.log(...args)
       },
       canvas: config.canvas || undefined,
+      // Prevent automatic main() execution - we'll call it manually
+      noInitialRun: true,
       setStatus(text: string) {
         if (text) {
           config.onStatusUpdate?.(text)
@@ -142,6 +147,7 @@ export class EmscriptenWasmModule {
     window.onerror = null
 
     this._module = undefined
+    this._config = undefined
   }
 
   // Helper method to access exported functions (similar to WasmModule pattern)
