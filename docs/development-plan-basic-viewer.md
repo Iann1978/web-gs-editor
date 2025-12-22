@@ -14,8 +14,8 @@ Development plan for Basic Viewer functionality. Enables loading, parsing, and r
 - [ ] Setup Emscripten SDK with WebGPU API support for WASM
 
 ### WASM Module Setup
-- [ ] Initialize C++ WASM project with Emscripten
-- [ ] Create WASM module structure (wasm/src/, wasm/pkg/)
+- [✓] Initialize C++ WASM project with Emscripten
+- [✓] Create WASM module structure (wasm/src/, wasm/pkg/)
 - [ ] Setup build configuration (Emscripten compilation with WebGPU API support)
 - [ ] Compile gsr C++ render engine to WASM using Emscripten SDK with WebGPU API bindings
 - [ ] Implement WASM module loader (src/core/loader/WASMLoader.ts)
