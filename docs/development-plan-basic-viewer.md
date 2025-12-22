@@ -7,15 +7,15 @@ Development plan for Basic Viewer functionality. Enables loading, parsing, and r
 ## Development Tasks (Week 1-2)
 
 ### Dependencies Setup
-- [ ] Install Pinia for state management
-- [ ] Install VueUse for composition utilities
-- [ ] Install vite-plugin-wasm for WASM module loading
-- [ ] Configure Vite for WASM support
+- [✓] Install Pinia for state management
+- [✓] Install VueUse for composition utilities
+- [✓] Install vite-plugin-wasm for WASM module loading
+- [✓] Configure Vite for WASM support
 - [ ] Setup Emscripten SDK with WebGPU API support for WASM
 
 ### WASM Module Setup
-- [ ] Initialize C++ WASM project with Emscripten
-- [ ] Create WASM module structure (wasm/src/, wasm/pkg/)
+- [✓] Initialize C++ WASM project with Emscripten
+- [✓] Create WASM module structure (wasm/src/, wasm/pkg/)
 - [ ] Setup build configuration (Emscripten compilation with WebGPU API support)
 - [ ] Compile gsr C++ render engine to WASM using Emscripten SDK with WebGPU API bindings
 - [ ] Implement WASM module loader (src/core/loader/WASMLoader.ts)
