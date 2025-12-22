@@ -26,3 +26,4 @@ dist-ssr
 # WASM build outputs
 wasm/pkg/
 wasm/build/
+reference-project

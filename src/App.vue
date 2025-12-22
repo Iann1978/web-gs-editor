@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import HelloWorld from './components/HelloWorld.vue'
-import WebGPUTriangle from './components/WebGPUTriangle.vue'
+import WasmWebGPUTriangle from './components/WasmWebGPUTriangle.vue'
 </script>
 
 <template>
@@ -12,7 +12,7 @@ import WebGPUTriangle from './components/WebGPUTriangle.vue'
       <img src="./assets/vue.svg" class="logo vue" alt="Vue logo" />
     </a>
   </div>
-  <WebGPUTriangle />
+  <WasmWebGPUTriangle />
   <HelloWorld msg="Vite + Vue" />
 </template>
 
