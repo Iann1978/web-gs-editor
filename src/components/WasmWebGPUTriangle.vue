@@ -14,13 +14,11 @@
 
 <script setup lang="ts">
 import { ref, onMounted, onUnmounted } from 'vue'
+import { EmscriptenWasmModule } from '../core/wasm/EmscriptenWasmModule'
 
 const canvasRef = ref<HTMLCanvasElement | null>(null)
 const error = ref<string>('')
 const loading = ref<boolean>(true)
-
-let scriptElement: HTMLScriptElement | null = null
-let wasmModule: any = null
 
 onMounted(async () => {
   if (!canvasRef.value) {
@@ -29,99 +27,29 @@ onMounted(async () => {
   }
 
   try {
-    // Check if WebGPU is supported
-    if (!('gpu' in navigator)) {
-      throw new Error('WebGPU is not supported in this browser')
-    }
-
-    // Configure the Emscripten Module object before loading app.js
-    // app.js is not modularized, so it expects a global Module object
-    const Module: any = {
-      print(...args: any[]) {
-        console.log(...args)
-      },
+    await EmscriptenWasmModule.init({
       canvas: canvasRef.value,
-      setStatus(text: string) {
+      wasmPath: new URL('../../wasm/pkg/app.wasm', import.meta.url).href,
+      jsPath: new URL('../../wasm/pkg/app.js', import.meta.url).href,
+      onStatusUpdate: (text: string) => {
         // Optional: can be used for status updates
-        if (text) {
-          console.log('Status:', text)
-        }
+        console.log('Status:', text)
       },
-      totalDependencies: 0,
-      monitorRunDependencies(left: number) {
-        Module.totalDependencies = Math.max(Module.totalDependencies, left)
-        if (left === 0) {
-          loading.value = false
-        }
+      onLoadingChange: (isLoading: boolean) => {
+        loading.value = isLoading
       },
-      locateFile(path: string) {
-        // Ensure app.wasm is found at the correct path
-        if (path.endsWith('.wasm')) {
-          return new URL('../../wasm/pkg/app.wasm', import.meta.url).href
-        }
-        return path
-      },
-      onRuntimeInitialized() {
-        // Called when WASM is ready
-        wasmModule = Module
+      onError: (errorMessage: string) => {
+        error.value = errorMessage
         loading.value = false
-        console.log('WASM module initialized')
+      },
+      onInitialized: () => {
+        console.log('WASM module initialized and ready to use')
+        // You can now access exported functions via:
+        // EmscriptenWasmModule.module.someFunction()
+        // or
+        // EmscriptenWasmModule.getExportedFunction('someFunction')()
       }
-    }
-
-    // Make Module available globally (app.js expects it)
-    ;(window as any).Module = Module
-
-    // Handle WebGPU context loss
-    canvasRef.value.addEventListener('webglcontextlost', (e) => {
-      console.error('WebGL context lost')
-      error.value = 'WebGPU context lost. Please reload the page.'
-      e.preventDefault()
-    }, false)
-
-    // Handle window errors
-    const originalErrorHandler = window.onerror
-    window.onerror = (event) => {
-      console.error('Error occurred:', event)
-      error.value = 'An error occurred. Check the console for details.'
-      loading.value = false
-      if (originalErrorHandler) {
-        return originalErrorHandler.call(window, event)
-      }
-      return false
-    }
-
-    // Dynamically load app.js
-    // Note: app.js is not modularized, so it must be loaded as a script tag
-    // The path assumes wasm/pkg is accessible (may need to be in public folder or configured in Vite)
-    scriptElement = document.createElement('script')
-    scriptElement.type = 'text/javascript'
-    scriptElement.async = true
-    
-    // Try to resolve the path - Vite may need files in public folder or configured
-    // For now, use a relative path from the component location
-    try {
-      const scriptUrl = new URL('../../wasm/pkg/app.js', import.meta.url).href
-      scriptElement.src = scriptUrl
-    } catch (e) {
-      // Fallback: assume files are in public folder or served from root
-      scriptElement.src = '/wasm/pkg/app.js'
-    }
-    
-    // Wait for script to load
-    await new Promise<void>((resolve, reject) => {
-      scriptElement!.onload = () => {
-        resolve()
-      }
-      scriptElement!.onerror = () => {
-        reject(new Error('Failed to load app.js. Make sure wasm/pkg/app.js is accessible.'))
-      }
-      document.head.appendChild(scriptElement!)
     })
-
-    // The script will automatically call main() and start the render loop
-    // No additional initialization needed
-
   } catch (err) {
     error.value = err instanceof Error ? err.message : 'Unknown error occurred'
     loading.value = false
@@ -130,18 +58,7 @@ onMounted(async () => {
 })
 
 onUnmounted(() => {
-  // Cleanup
-  if (scriptElement && scriptElement.parentNode) {
-    scriptElement.parentNode.removeChild(scriptElement)
-  }
-  
-  // Clean up global Module if it exists
-  if ((window as any).Module === wasmModule) {
-    delete (window as any).Module
-  }
-
-  // Emscripten main loop cleanup is handled automatically
-  // The render loop will stop when the component is unmounted
+  EmscriptenWasmModule.cleanup()
 })
 </script>
 
