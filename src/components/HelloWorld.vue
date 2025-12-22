@@ -1,9 +1,11 @@
 <script setup lang="ts">
 import { useTestStore } from '../stores/test'
+import { useMouse } from '@vueuse/core'
 
 defineProps<{ msg: string }>()
 
 const testStore = useTestStore()
+const { x, y } = useMouse()
 </script>
 
 <template>
@@ -15,6 +17,9 @@ const testStore = useTestStore()
     <p>
       Edit
       <code>components/HelloWorld.vue</code> to test HMR
+    </p>
+    <p style="margin-top: 10px; font-size: 0.9em; color: #666;">
+      VueUse Mouse Position: X: {{ x }}, Y: {{ y }}
     </p>
   </div>
 
