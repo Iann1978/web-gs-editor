@@ -10,7 +10,7 @@ Development plan for Basic Viewer functionality. Enables loading, parsing, and r
 - [✓] Install Pinia for state management
 - [✓] Install VueUse for composition utilities
 - [✓] Install vite-plugin-wasm for WASM module loading
-- [ ] Configure Vite for WASM support
+- [✓] Configure Vite for WASM support
 - [ ] Setup Emscripten SDK with WebGPU API support for WASM
 
 ### WASM Module Setup
