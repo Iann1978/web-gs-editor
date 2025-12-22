@@ -1,0 +1,3 @@
+[submodule "wasm/dawn"]
+	path = wasm/dawn
+	url = https://github.com/google/dawn.git
