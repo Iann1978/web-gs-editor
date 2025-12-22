@@ -26,7 +26,7 @@ const greetName = ref('Vue')
 onMounted(async () => {
   try {
     // Import the WASM module
-    const wasmModule = await import('../../wasm/pkg/test.js')
+    const wasmModule = await import('@wasm/test.js')
     wasmInstance.value = await wasmModule.default()
     wasmLoaded.value = true
     
