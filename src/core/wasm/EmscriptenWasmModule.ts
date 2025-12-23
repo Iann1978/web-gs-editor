@@ -14,6 +14,12 @@ export class EmscriptenWasmModule {
   // Stored for potential future use (e.g., reinitialization)
   private static _config: EmscriptenModuleConfig | undefined = undefined
 
+  public static fn_gsr_get_scene: (() => number) | undefined = undefined
+  public static fn_gsr_scene_get_entity_count: ((scenePtr: number) => number) | undefined = undefined
+  public static fn_gsr_scene_get_entity: ((scenePtr: number, idx: number) => number) | undefined = undefined
+  public static fn_gsr_entity_get_name: ((entityPtr: number) => number) | undefined = undefined
+  public static fn_gsr_entity_get_name_len: ((entityPtr: number) => number) | undefined = undefined
+
   static get config(): EmscriptenModuleConfig | undefined {
     return this._config
   }
@@ -71,6 +77,28 @@ export class EmscriptenWasmModule {
       onRuntimeInitialized() {
         // Called when WASM is ready
         EmscriptenWasmModule._module = Module
+        
+        EmscriptenWasmModule.fn_gsr_get_scene = Module.cwrap('gsr_get_scene', 'number', [])
+        if (!EmscriptenWasmModule.fn_gsr_get_scene) {
+          console.warn('EmscriptenWasmModule: gsr_get_scene function not found')
+        }
+        EmscriptenWasmModule.fn_gsr_scene_get_entity_count = Module.cwrap('gsr_scene_get_entity_count', 'number', ['number'])
+        if (!EmscriptenWasmModule.fn_gsr_scene_get_entity_count) {
+          console.warn('EmscriptenWasmModule: gsr_scene_get_entity_count function not found')
+        }
+        EmscriptenWasmModule.fn_gsr_scene_get_entity = Module.cwrap('gsr_scene_get_entity', 'number', ['number', 'number'])
+        if (!EmscriptenWasmModule.fn_gsr_scene_get_entity) {
+          console.warn('EmscriptenWasmModule: gsr_scene_get_entity function not found')
+        }
+        EmscriptenWasmModule.fn_gsr_entity_get_name = Module.cwrap('gsr_entity_get_name', 'number', ['number'])
+        if (!EmscriptenWasmModule.fn_gsr_entity_get_name) {
+          console.warn('EmscriptenWasmModule: gsr_entity_get_name function not found')
+        }
+        EmscriptenWasmModule.fn_gsr_entity_get_name_len = Module.cwrap('gsr_entity_get_name_len', 'number', ['number'])
+        if (!EmscriptenWasmModule.fn_gsr_entity_get_name_len) {
+          console.warn('EmscriptenWasmModule: gsr_entity_get_name_len function not found')
+        }
+
         config.onLoadingChange?.(false)
         config.onInitialized?.(Module)
         console.log('WASM module initialized')

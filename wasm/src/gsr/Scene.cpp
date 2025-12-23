@@ -90,7 +90,7 @@ extern "C" {
 #if defined(__EMSCRIPTEN__)
 EMSCRIPTEN_KEEPALIVE
 #endif
-Scene* get_scene() {
+Scene* gsr_get_scene() {
     return Scene::ins;
 }
 

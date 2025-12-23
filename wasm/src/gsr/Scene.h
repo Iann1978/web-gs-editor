@@ -33,7 +33,7 @@ private:
 };
 
 // Expose the Scene singleton pointer to JS/WASM side.
-extern "C" Scene* get_scene();
+extern "C" Scene* gsr_get_scene();
 extern "C" size_t gsr_scene_get_entity_count(Scene* scene);
 extern "C" Entity* gsr_scene_get_entity(Scene* scene, size_t index);
 

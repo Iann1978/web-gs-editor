@@ -1,39 +1,30 @@
 import { EmscriptenWasmModule } from "../wasm/EmscriptenWasmModule"
 
 
-export class Entity {
-    readonly ptr: number | undefined
+interface Transform {
+    position: [number, number, number]
+    rotation: [number, number, number, number] // quaternion
+    scale: [number, number, number]
+}
 
-    constructor(ptr?: number) {
+export class Entity {
+    readonly ptr: number
+
+    constructor(ptr: number) {
       this.ptr = ptr
     }
 
     getName(): string {
-        if (!this.ptr) {
-            console.warn('Entity.getName: Entity pointer is not available')
-            return ''
-        }
-        const getPtr = EmscriptenWasmModule.getExportedFunction<(entityPtr: number) => number>('_gsr_entity_get_name') ||
-        EmscriptenWasmModule.getExportedFunction<(entityPtr: number) => number>('gsr_entity_get_name')
-        if (!getPtr) {
-            console.warn('Entity.getName: gsr_entity_get_name function not found')
-            return ''
-        }
-        const getLen = EmscriptenWasmModule.getExportedFunction<(entityPtr: number) => number>('_gsr_entity_get_name_len') ||
-        EmscriptenWasmModule.getExportedFunction<(entityPtr: number) => number>('gsr_entity_get_name_len')
-        if (!getLen) {
-            console.warn('Entity.getName: gsr_entity_get_name_len function not found')
-            return ''
-        }
-        const memory = EmscriptenWasmModule.wasmMemory
-        if (!memory) {
-            console.warn('Entity.getName: wasmMemory is not available')
-            return ''
-        }
+        const getPtr = EmscriptenWasmModule.fn_gsr_entity_get_name!;
+        const getLen = EmscriptenWasmModule.fn_gsr_entity_get_name_len!;
+        const memory = EmscriptenWasmModule.wasmMemory!
         try {
             const ptr = getPtr(this.ptr)
             const len = getLen(this.ptr)
-            if (typeof ptr !== 'number' || ptr === 0 || typeof len !== 'number' || len <= 0) return ''
+            if (typeof ptr !== 'number' || ptr === 0 || typeof len !== 'number' || len <= 0) {
+                console.warn('Entity.getName: pointer or length is not available')
+                return ''
+            }
             const view = new Uint8Array(memory.buffer, ptr, len)
             return new TextDecoder('utf-8').decode(view)
         } catch (err) {
