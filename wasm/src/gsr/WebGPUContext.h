@@ -3,6 +3,9 @@
 #include <webgpu/webgpu_cpp.h>
 #include <webgpu/webgpu_glfw.h>
 #include <GLFW/glfw3.h>
+#include <vector>
+
+class VertexLayout;
 
 class WebGPUContext {
 public:
@@ -29,6 +32,16 @@ public:
     // Resource creation helpers
     wgpu::ShaderModule CreateShaderModule(const char* wgslCode);
     wgpu::RenderPipeline CreateRenderPipeline(wgpu::ShaderModule shaderModule, wgpu::TextureFormat targetFormat);
+    wgpu::Buffer CreateBuffer(const void* data, size_t size, wgpu::BufferUsage usage);
+    
+    // Helper to create vertex buffer layouts from VertexLayout
+    // Note: The returned layouts contain pointers to attributes stored in the returned vector
+    // Both must be kept alive until the pipeline is created
+    struct VertexBufferLayoutData {
+        std::vector<wgpu::VertexAttribute> attributes;
+        std::vector<wgpu::VertexBufferLayout> layouts;
+    };
+    VertexBufferLayoutData CreateVertexBufferLayouts(const VertexLayout& layout);
     
     // Rendering operations
     wgpu::SurfaceTexture GetCurrentSurfaceTexture();

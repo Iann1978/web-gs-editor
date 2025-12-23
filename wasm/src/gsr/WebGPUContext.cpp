@@ -1,8 +1,11 @@
 #include "WebGPUContext.h"
+#include "VertexAttribute.h"
 #include <iostream>
 #include <cstdlib>
+#include <cstring>
 #include <string>
 #include <sstream>
+#include <vector>
 
 WebGPUContext* WebGPUContext::ins = nullptr;
 
@@ -117,6 +120,74 @@ void WebGPUContext::Present() {
 
 void WebGPUContext::ProcessEvents() {
     instance.ProcessEvents();
+}
+
+wgpu::Buffer WebGPUContext::CreateBuffer(const void* data, size_t size, wgpu::BufferUsage usage) {
+    wgpu::BufferDescriptor descriptor{};
+    descriptor.size = size;
+    descriptor.usage = usage;
+    descriptor.mappedAtCreation = (data != nullptr);
+    
+    wgpu::Buffer buffer = device.CreateBuffer(&descriptor);
+    
+    if (data != nullptr) {
+        void* mappedData = buffer.GetMappedRange();
+        if (mappedData) {
+            memcpy(mappedData, data, size);
+            buffer.Unmap();
+        } else {
+            // If mapping failed, use queue write
+            queue.WriteBuffer(buffer, 0, data, size);
+        }
+    }
+    
+    return buffer;
+}
+
+WebGPUContext::VertexBufferLayoutData WebGPUContext::CreateVertexBufferLayouts(const VertexLayout& layout) {
+    VertexBufferLayoutData data;
+    
+    // For WebGPU, we need to create separate buffer layouts for each channel
+    // Since we're using channel buffers (like PCL), each channel is a separate buffer
+    uint32_t slot = 0;
+    for (const auto& [semantic, attr] : layout.getAttributes()) {
+        // Create vertex attribute
+        wgpu::VertexAttribute vertexAttr;
+        vertexAttr.shaderLocation = slot;
+        vertexAttr.offset = 0;
+        
+        // Map VertexAttributeType to WebGPU format
+        switch (attr.type) {
+            case VertexAttributeType::TYPE::FLOAT:
+                vertexAttr.format = wgpu::VertexFormat::Float32;
+                break;
+            case VertexAttributeType::TYPE::FLOAT2:
+                vertexAttr.format = wgpu::VertexFormat::Float32x2;
+                break;
+            case VertexAttributeType::TYPE::FLOAT3:
+                vertexAttr.format = wgpu::VertexFormat::Float32x3;
+                break;
+            case VertexAttributeType::TYPE::FLOAT4:
+                vertexAttr.format = wgpu::VertexFormat::Float32x4;
+                break;
+            default:
+                vertexAttr.format = wgpu::VertexFormat::Float32;
+                break;
+        }
+        
+        data.attributes.push_back(vertexAttr);
+        
+        wgpu::VertexBufferLayout bufferLayout;
+        bufferLayout.arrayStride = VertexAttributeType::typeToSize(attr.type);
+        bufferLayout.stepMode = wgpu::VertexStepMode::Vertex;
+        bufferLayout.attributeCount = 1;
+        bufferLayout.attributes = &data.attributes.back(); // Point to the stored attribute
+        
+        data.layouts.push_back(bufferLayout);
+        slot++;
+    }
+    
+    return data;
 }
 
 void WebGPUContext::Destroy() {

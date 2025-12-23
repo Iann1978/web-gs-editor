@@ -15,6 +15,7 @@ set(APP_SOURCES
     src/gsr/WebGPUContext.cpp
     src/gsr/VertexAttribute.cpp
     src/gsr/Shader.cpp
+    src/gsr/Mesh.cpp
 )
 
 # Source files for test (simple WASM module)

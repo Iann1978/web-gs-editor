@@ -1,5 +1,7 @@
 #include "Shader.h"
+#include "Mesh.h"
 #include <iostream>
+#include <vector>
 
 // Initialize static member
 Shader* Shader::triangle = nullptr;
@@ -33,6 +35,25 @@ void Shader::buildPredefined() {
         Shader::triangle = new Shader();
         Shader::triangle->layout = VertexLayout();  // Empty layout - triangle shader uses builtin vertex_index
         Shader::triangle->pipeline = pipeline;
+    }
+}
+
+void Shader::BindMeshBuffers(wgpu::RenderPassEncoder& pass, Mesh* mesh) {
+    if (!mesh) return;
+    
+    // Bind each channel buffer by slot (slot matches shader location)
+    uint32_t slot = 0;
+    for (const auto& [semantic, attr] : mesh->layout.getAttributes()) {
+        wgpu::Buffer buffer = mesh->getBuffer(semantic);
+        if (buffer) {
+            pass.SetVertexBuffer(slot, buffer, 0, wgpu::kWholeSize);
+        }
+        slot++;
+    }
+    
+    // Bind index buffer if present
+    if (mesh->indices) {
+        pass.SetIndexBuffer(mesh->indices, mesh->indexFormat, 0, wgpu::kWholeSize);
     }
 }
 
