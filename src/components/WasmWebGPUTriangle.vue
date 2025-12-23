@@ -15,10 +15,34 @@
 <script setup lang="ts">
 import { ref, onMounted, onUnmounted } from 'vue'
 import { EmscriptenWasmModule } from '../core/wasm/EmscriptenWasmModule'
+import { useSceneStore } from '@/stores/scene'
+import type { Entity } from '@/types/editor'
 
 const canvasRef = ref<HTMLCanvasElement | null>(null)
 const error = ref<string>('')
 const loading = ref<boolean>(true)
+const sceneStore = useSceneStore()
+
+const pushTriangleEntity = () => {
+  const entity: Entity = {
+    id: 'triangle-1',
+    name: 'Triangle',
+    type: 'mesh',
+    transform: {
+      position: [0, 0, 0],
+      rotation: [0, 0, 0, 1],
+      scale: [1, 1, 1]
+    },
+    visible: true,
+    locked: false,
+    children: []
+  }
+
+  // Avoid duplicates if the panel re-renders
+  if (!sceneStore.entities.find((e) => e.id === entity.id)) {
+    sceneStore.addEntity(entity)
+  }
+}
 
 onMounted(async () => {
   if (!canvasRef.value) {
@@ -90,9 +114,11 @@ onMounted(async () => {
           if (module._StartWebGPU) {
             console.log('Calling StartWebGPU()...')
             module._StartWebGPU()
+            pushTriangleEntity()
           } else if (module.ccall) {
             console.log('Calling StartWebGPU() via ccall...')
             module.ccall('StartWebGPU', null, [])
+            pushTriangleEntity()
           } else {
             console.warn('StartWebGPU() function not found. Make sure it is exported in CMakeLists.txt')
           }
