@@ -9,11 +9,27 @@ export class Entity {
     }
 
     getName(): string {
-        if (!this.ptr) return ''
-        const getPtr = EmscriptenWasmModule.getExportedFunction<(entityPtr: number) => number>('gsr_entity_get_name')
-        const getLen = EmscriptenWasmModule.getExportedFunction<(entityPtr: number) => number>('gsr_entity_get_name_len')
+        if (!this.ptr) {
+            console.warn('Entity.getName: Entity pointer is not available')
+            return ''
+        }
+        const getPtr = EmscriptenWasmModule.getExportedFunction<(entityPtr: number) => number>('_gsr_entity_get_name') ||
+        EmscriptenWasmModule.getExportedFunction<(entityPtr: number) => number>('gsr_entity_get_name')
+        if (!getPtr) {
+            console.warn('Entity.getName: gsr_entity_get_name function not found')
+            return ''
+        }
+        const getLen = EmscriptenWasmModule.getExportedFunction<(entityPtr: number) => number>('_gsr_entity_get_name_len') ||
+        EmscriptenWasmModule.getExportedFunction<(entityPtr: number) => number>('gsr_entity_get_name_len')
+        if (!getLen) {
+            console.warn('Entity.getName: gsr_entity_get_name_len function not found')
+            return ''
+        }
         const memory = EmscriptenWasmModule.wasmMemory
-        if (!getPtr || !getLen || !memory) return ''
+        if (!memory) {
+            console.warn('Entity.getName: wasmMemory is not available')
+            return ''
+        }
         try {
             const ptr = getPtr(this.ptr)
             const len = getLen(this.ptr)

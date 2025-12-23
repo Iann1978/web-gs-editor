@@ -117,7 +117,15 @@ onMounted(async () => {
 
           console.log('WebGPU initialization complete, starting render loop...')
 
-          // Populate scene store from WASM scene
+
+
+          // Start render loop
+          if (module._StartWebGPU) {
+            console.log('Calling StartWebGPU()...')
+            module._StartWebGPU()
+            console.log('StartWebGPU() called')
+
+                      // Populate scene store from WASM scene
           const scene = gsr.getScene()
           console.log('Scene:', scene)
           console.log('Scene ptr:', scene.ptr)
@@ -146,11 +154,6 @@ onMounted(async () => {
             sceneStore.clearScene()
             list.forEach((e) => sceneStore.addEntity(e))
           }
-
-          // Start render loop
-          if (module._StartWebGPU) {
-            console.log('Calling StartWebGPU()...')
-            module._StartWebGPU()
           } else if (module.ccall) {
             console.log('Calling StartWebGPU() via ccall...')
             module.ccall('StartWebGPU', null, [])

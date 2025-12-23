@@ -109,7 +109,7 @@ void Start() {
   g_scene->initialize();
   
   // Create mesh entity and add to scene
-  EntMesh* meshEntity = new EntMesh(Mesh::triangle, Shader::vertexcolor, "Triangle");
+  EntMesh* meshEntity = new EntMesh(Mesh::triangle, Shader::vertexcolor, "Triangle_1");
   g_scene->addEntity(meshEntity);
 
 #if defined(__EMSCRIPTEN__)
@@ -122,6 +122,7 @@ void Start() {
     g_context->ProcessEvents();
   }
 #endif
+std::cout << "End of Start" << std::endl;
 }
 
 // Export Init() and Start() for manual calling from JavaScript
