@@ -1,4 +1,5 @@
 #include <iostream>
+#include <cmath>
 
 #include <GLFW/glfw3.h>
 #if defined(__EMSCRIPTEN__)
@@ -6,14 +7,18 @@
 #endif
 #include <dawn/webgpu_cpp_print.h>
 #include <webgpu/webgpu_cpp.h>
+#include <glm/glm.hpp>
+#include <glm/gtc/matrix_transform.hpp>
 #include "WebGPUContext.h"
 #include "Shader.h"
 #include "Mesh.h"
 #include "MeshRenderer.h"
+#include "Camera.h"
 
 WebGPUContext* g_context = nullptr;
 GLFWwindow* g_window = nullptr;
 MeshRenderer* g_meshRenderer = nullptr;
+Camera* g_camera = nullptr;
 
 const uint32_t kWidth = 512;
 const uint32_t kHeight = 512;
@@ -32,8 +37,37 @@ void Render() {
   wgpu::CommandEncoder encoder = g_context->CreateCommandEncoder();
   wgpu::RenderPassEncoder pass = encoder.BeginRenderPass(&renderpass);
   
+  // Update camera rotation around origin
+  if (g_camera) {
+    // Get time for rotation (use GLFW time or emscripten time)
+    float time;
+#if defined(__EMSCRIPTEN__)
+    time = emscripten_get_now() / 1000.0f;  // Convert ms to seconds
+#else
+    time = static_cast<float>(glfwGetTime());
+#endif
+    
+    // Rotate camera around origin in a circle
+    // Radius of rotation
+    float radius = 3.0f;
+    // Height of camera
+    float height = 1.5f;
+    
+    // Calculate camera position in a circle around origin
+    float angle = time * 0.5f;  // Rotate slowly (0.5 radians per second)
+    float x = radius * cosf(angle);
+    float z = radius * sinf(angle);
+    
+    // Camera looks at origin
+    glm::vec3 eye(x, height, z);
+    glm::vec3 center(0.0f, 0.0f, 0.0f);  // Look at origin
+    glm::vec3 up(0.0f, 1.0f, 0.0f);      // Up vector
+    
+    g_camera->lookAt(eye, center, up);
+  }
+  
   if (g_meshRenderer) {
-    g_meshRenderer->Render(pass);
+    g_meshRenderer->Render(pass, g_camera);
   } else {
     // Fallback to old triangle shader
     pass.SetPipeline(Shader::triangle->GetPipeline());
@@ -58,8 +92,13 @@ void Start() {
   Shader::buildPredefined();
   Mesh::buildPredefined();
   
-  // Create mesh renderer with predefined shader and mesh
-  g_meshRenderer = new MeshRenderer(Mesh::triangle, Shader::vertexcolor2d);
+  // Create camera
+  g_camera = new Camera();
+  g_camera->setAspect(static_cast<float>(kWidth) / static_cast<float>(kHeight));
+  g_camera->setNearFar(0.1f, 100.0f);
+  
+  // Create mesh renderer with 3D shader (vertexcolor) and triangle mesh
+  g_meshRenderer = new MeshRenderer(Mesh::triangle, Shader::vertexcolor);
 
 #if defined(__EMSCRIPTEN__)
   emscripten_set_main_loop(Render, 0, false);

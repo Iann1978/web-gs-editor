@@ -1,5 +1,8 @@
 #include "MeshRenderer.h"
 #include "VertexAttribute.h"
+#include "Camera.h"
+#include <glm/glm.hpp>
+#include <glm/gtc/matrix_transform.hpp>
 #include <iostream>
 
 MeshRenderer::MeshRenderer(Mesh* mesh, Shader* shader)
@@ -27,10 +30,27 @@ void MeshRenderer::BindBuffers(wgpu::RenderPassEncoder& pass) {
     }
 }
 
-void MeshRenderer::Render(wgpu::RenderPassEncoder& pass) {
+void MeshRenderer::Render(wgpu::RenderPassEncoder& pass, Camera* camera) {
     if (!mesh || !shader) {
         std::cerr << "MeshRenderer::Render: mesh or shader is null" << std::endl;
         return;
+    }
+    
+    // Set camera uniforms if camera is provided and shader needs them
+    if (camera) {
+        // Check if shader has "u_uniforms" binding (vertexcolor shader)
+        if (shader->getBinding("u_uniforms")) {
+            // Set model matrix (identity for now, can be extended with Transform)
+            glm::mat4 model = glm::mat4(1.0f);
+            shader->setUniform("u_uniforms", "model", model);
+            
+            // Set view and projection from camera
+            shader->setUniform("u_uniforms", "view", camera->getView());
+            shader->setUniform("u_uniforms", "proj", camera->getProjection());
+            
+            // Upload uniforms to GPU
+            shader->uploadUniformBuffers();
+        }
     }
     
     // Set the pipeline

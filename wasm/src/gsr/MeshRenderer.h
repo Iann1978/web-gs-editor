@@ -4,6 +4,8 @@
 #include "Mesh.h"
 #include "Shader.h"
 
+class Camera;  // Forward declaration
+
 class MeshRenderer {
 private:
     Mesh* mesh;
@@ -14,7 +16,8 @@ public:
     
     // Render the mesh using the shader
     // Takes a RenderPassEncoder that should already be started
-    void Render(wgpu::RenderPassEncoder& pass);
+    // camera: optional camera for setting view/projection matrices
+    void Render(wgpu::RenderPassEncoder& pass, Camera* camera = nullptr);
     
     // Bind mesh buffers to render pass
     // Uses the shader's layout order to determine correct slot assignments
