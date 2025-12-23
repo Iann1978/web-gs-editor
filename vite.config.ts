@@ -10,6 +10,7 @@ export default defineConfig({
   plugins: [vue(), wasm(), topLevelAwait()],
   resolve: {
     alias: {
+      '@': path.resolve(__dirname, 'src'),
       '@wasm': path.resolve(__dirname, 'wasm/pkg'),
     },
   },

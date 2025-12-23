@@ -11,7 +11,12 @@ export interface EmscriptenModuleConfig {
 export class EmscriptenWasmModule {
   private static _module: any = undefined
   private static _scriptElement: HTMLScriptElement | null = null
+  // Stored for potential future use (e.g., reinitialization)
   private static _config: EmscriptenModuleConfig | undefined = undefined
+
+  static get config(): EmscriptenModuleConfig | undefined {
+    return this._config
+  }
 
   static get module(): any {
     return this._module
