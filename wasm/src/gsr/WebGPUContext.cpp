@@ -149,11 +149,13 @@ WebGPUContext::VertexBufferLayoutData WebGPUContext::CreateVertexBufferLayouts(c
     
     // For WebGPU, we need to create separate buffer layouts for each channel
     // Since we're using channel buffers (like PCL), each channel is a separate buffer
-    uint32_t slot = 0;
     for (const auto& [semantic, attr] : layout.getAttributes()) {
+        uint32_t slot = VertexSemantic::getSlot(semantic);
+        if (slot == UINT32_MAX) continue; // Skip invalid semantics
+        
         // Create vertex attribute
         wgpu::VertexAttribute vertexAttr;
-        vertexAttr.shaderLocation = slot;
+        vertexAttr.shaderLocation = slot;  // Use semantic's fixed slot
         vertexAttr.offset = 0;
         
         // Map VertexAttributeType to WebGPU format
@@ -184,7 +186,6 @@ WebGPUContext::VertexBufferLayoutData WebGPUContext::CreateVertexBufferLayouts(c
         bufferLayout.attributes = &data.attributes.back(); // Point to the stored attribute
         
         data.layouts.push_back(bufferLayout);
-        slot++;
     }
     
     return data;

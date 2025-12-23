@@ -76,13 +76,14 @@ void Shader::buildPredefined() {
         wgpu::ShaderModule shaderModule = context.CreateShaderModule(vertexcolor2dShaderCode);
         
         // Create vertex buffer layouts for vec3 position and vec3 color
+        // Use fixed slot numbers from VertexSemantic
         wgpu::VertexAttribute posAttr;
-        posAttr.shaderLocation = 0;
+        posAttr.shaderLocation = VertexSemantic::getSlot(VertexSemantic::POSITION); // 0
         posAttr.offset = 0;
         posAttr.format = wgpu::VertexFormat::Float32x3;
         
         wgpu::VertexAttribute colorAttr;
-        colorAttr.shaderLocation = 1;
+        colorAttr.shaderLocation = VertexSemantic::getSlot(VertexSemantic::COLOR); // 1
         colorAttr.offset = 0;
         colorAttr.format = wgpu::VertexFormat::Float32x3;
         
@@ -134,15 +135,16 @@ void Shader::buildPredefined() {
 void Shader::BindMeshBuffers(wgpu::RenderPassEncoder& pass, Mesh* mesh, const Shader* shader) {
     if (!mesh || !shader) return;
     
-    // Bind each channel buffer by slot (slot matches shader location)
-    // Iterate through shader's layout to ensure correct order (not mesh's alphabetical order)
-    uint32_t slot = 0;
+    // Bind each channel buffer using the semantic's fixed slot number
+    // This ensures correct binding regardless of map iteration order
     for (const auto& [semantic, attr] : shader->layout.getAttributes()) {
+        uint32_t slot = VertexSemantic::getSlot(semantic);
+        if (slot == UINT32_MAX) continue; // Skip invalid semantics
+        
         wgpu::Buffer buffer = mesh->getBuffer(semantic);
         if (buffer) {
             pass.SetVertexBuffer(slot, buffer, 0, wgpu::kWholeSize);
         }
-        slot++;
     }
     
     // Bind index buffer if present

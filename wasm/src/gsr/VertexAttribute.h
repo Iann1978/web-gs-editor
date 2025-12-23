@@ -3,6 +3,7 @@
 #include <string>
 #include <map>
 #include <cstdint>
+#include <climits>
 
 class VertexAttributeType {
 public:
@@ -44,6 +45,19 @@ namespace VertexSemantic {
     constexpr const char* NORMAL = "normal";
     constexpr const char* TANGENT = "tangent";
     constexpr const char* BITANGENT = "bitangent";
+    
+    // Get fixed slot number for each semantic
+    // This ensures consistent slot assignment regardless of insertion order
+    // Slots are fixed: POSITION=0, COLOR=1, UV=2, NORMAL=3, TANGENT=4, BITANGENT=5
+    inline uint32_t getSlot(const std::string& semantic) {
+        if (semantic == POSITION) return 0;
+        if (semantic == COLOR) return 1;
+        if (semantic == UV) return 2;
+        if (semantic == NORMAL) return 3;
+        if (semantic == TANGENT) return 4;
+        if (semantic == BITANGENT) return 5;
+        return UINT32_MAX; // Invalid semantic
+    }
 }
 
 class VertexLayout {
