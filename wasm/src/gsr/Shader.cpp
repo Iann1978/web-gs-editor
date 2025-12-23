@@ -1,12 +1,14 @@
 #include "Shader.h"
 #include "shaders/triangle.wgsl.h"
 #include "shaders/vertexcolor2d.wgsl.h"
+#include "shaders/vertexcolor.wgsl.h"
 #include <iostream>
 #include <vector>
 
 // Initialize static members
 Shader* Shader::triangle = nullptr;
 Shader* Shader::vertexcolor2d = nullptr;
+Shader* Shader::vertexcolor = nullptr;
 
 void Shader::buildPredefined() {
     std::cout << "Shader.buildPredefined" << std::endl;
@@ -88,6 +90,69 @@ void Shader::buildPredefined() {
         Shader::vertexcolor2d->layout.add(VertexSemantic::POSITION, VertexAttributeType::TYPE::FLOAT3);
         Shader::vertexcolor2d->layout.add(VertexSemantic::COLOR, VertexAttributeType::TYPE::FLOAT3);
         Shader::vertexcolor2d->pipeline = pipeline;
+    }
+    
+    // Create vertexcolor shader (3D with MVP matrices)
+    if (Shader::vertexcolor == nullptr) {
+        WebGPUContext& context = WebGPUContext::Ref();
+        
+        // Create shader module
+        wgpu::ShaderModule shaderModule = context.CreateShaderModule(vertexcolor_shader_code);
+        
+        // Create vertex buffer layouts for vec3 position and vec3 color (same as vertexcolor2d)
+        wgpu::VertexAttribute posAttr;
+        posAttr.shaderLocation = VertexSemantic::getSlot(VertexSemantic::POSITION); // 0
+        posAttr.offset = 0;
+        posAttr.format = wgpu::VertexFormat::Float32x3;
+        
+        wgpu::VertexAttribute colorAttr;
+        colorAttr.shaderLocation = VertexSemantic::getSlot(VertexSemantic::COLOR); // 1
+        colorAttr.offset = 0;
+        colorAttr.format = wgpu::VertexFormat::Float32x3;
+        
+        wgpu::VertexBufferLayout posLayout;
+        posLayout.arrayStride = 12; // 3 floats * 4 bytes
+        posLayout.stepMode = wgpu::VertexStepMode::Vertex;
+        posLayout.attributeCount = 1;
+        posLayout.attributes = &posAttr;
+        
+        wgpu::VertexBufferLayout colorLayout;
+        colorLayout.arrayStride = 12; // 3 floats * 4 bytes
+        colorLayout.stepMode = wgpu::VertexStepMode::Vertex;
+        colorLayout.attributeCount = 1;
+        colorLayout.attributes = &colorAttr;
+        
+        std::vector<wgpu::VertexBufferLayout> vertexLayouts;
+        vertexLayouts.push_back(posLayout);
+        vertexLayouts.push_back(colorLayout);
+        
+        // Create render pipeline
+        wgpu::ColorTargetState colorTarget;
+        colorTarget.format = context.format;
+        
+        wgpu::FragmentState fragmentState;
+        fragmentState.module = shaderModule;
+        fragmentState.entryPoint = "fragmentMain";
+        fragmentState.targetCount = 1;
+        fragmentState.targets = &colorTarget;
+        
+        wgpu::VertexState vertexState;
+        vertexState.module = shaderModule;
+        vertexState.entryPoint = "vertexMain";
+        vertexState.bufferCount = static_cast<uint32_t>(vertexLayouts.size());
+        vertexState.buffers = vertexLayouts.data();
+        
+        wgpu::RenderPipelineDescriptor pipelineDesc;
+        pipelineDesc.vertex = vertexState;
+        pipelineDesc.fragment = &fragmentState;
+        
+        wgpu::RenderPipeline pipeline = context.device.CreateRenderPipeline(&pipelineDesc);
+        
+        // Create shader object with proper layout
+        Shader::vertexcolor = new Shader();
+        Shader::vertexcolor->layout.add(VertexSemantic::POSITION, VertexAttributeType::TYPE::FLOAT3);
+        Shader::vertexcolor->layout.add(VertexSemantic::COLOR, VertexAttributeType::TYPE::FLOAT3);
+        Shader::vertexcolor->pipeline = pipeline;
     }
 }
 

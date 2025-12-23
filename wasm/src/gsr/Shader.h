@@ -18,6 +18,7 @@ public:
     // Static predefined shader
     static Shader* triangle;
     static Shader* vertexcolor2d;
+    static Shader* vertexcolor;
     static void buildPredefined();
 };
 
