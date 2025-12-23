@@ -7,29 +7,13 @@
 #include <dawn/webgpu_cpp_print.h>
 #include <webgpu/webgpu_cpp.h>
 #include "WebGPUContext.h"
+#include "Shader.h"
 
 WebGPUContext* g_context = nullptr;
-wgpu::RenderPipeline g_pipeline;
 GLFWwindow* g_window = nullptr;
 
 const uint32_t kWidth = 512;
 const uint32_t kHeight = 512;
-
-const char shaderCode[] = R"(
-    @vertex fn vertexMain(@builtin(vertex_index) i : u32) ->
-      @builtin(position) vec4f {
-        const pos = array(vec2f(0, 1), vec2f(-1, -1), vec2f(1, -1));
-        return vec4f(pos[i], 0, 1);
-    }
-    @fragment fn fragmentMain() -> @location(0) vec4f {
-        return vec4f(1, 1, 0, 1);
-    }
-)";
-
-void CreateRenderPipeline() {
-  auto shaderModule = g_context->CreateShaderModule(shaderCode);
-  g_pipeline = g_context->CreateRenderPipeline(shaderModule, g_context->format);
-}
 
 void Render() {
   wgpu::SurfaceTexture surfaceTexture = g_context->GetCurrentSurfaceTexture();
@@ -44,7 +28,7 @@ void Render() {
 
   wgpu::CommandEncoder encoder = g_context->CreateCommandEncoder();
   wgpu::RenderPassEncoder pass = encoder.BeginRenderPass(&renderpass);
-  pass.SetPipeline(g_pipeline);
+  pass.SetPipeline(Shader::triangle->GetPipeline());
   pass.Draw(3);
   pass.End();
   wgpu::CommandBuffer commands = encoder.Finish();
@@ -61,7 +45,7 @@ void Start() {
   
   g_context->CreateSurface(g_window);
   g_context->ConfigureSurface();
-  CreateRenderPipeline();
+  Shader::buildPredefined();
 
 #if defined(__EMSCRIPTEN__)
   emscripten_set_main_loop(Render, 0, false);
