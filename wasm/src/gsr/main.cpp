@@ -12,13 +12,14 @@
 #include "WebGPUContext.h"
 #include "Shader.h"
 #include "Mesh.h"
-#include "MeshRenderer.h"
 #include "Camera.h"
+#include "Scene.h"
+#include "EntMesh.h"
 
 WebGPUContext* g_context = nullptr;
 GLFWwindow* g_window = nullptr;
-MeshRenderer* g_meshRenderer = nullptr;
 Camera* g_camera = nullptr;
+Scene* g_scene = nullptr;
 
 const uint32_t kWidth = 512;
 const uint32_t kHeight = 512;
@@ -37,16 +38,19 @@ void Render() {
   wgpu::CommandEncoder encoder = g_context->CreateCommandEncoder();
   wgpu::RenderPassEncoder pass = encoder.BeginRenderPass(&renderpass);
   
+  // Calculate deltaTime
+  static float lastTime = 0.0f;
+  float currentTime;
+#if defined(__EMSCRIPTEN__)
+  currentTime = emscripten_get_now() / 1000.0f;  // Convert ms to seconds
+#else
+  currentTime = static_cast<float>(glfwGetTime());
+#endif
+  float deltaTime = currentTime - lastTime;
+  lastTime = currentTime;
+  
   // Update camera rotation around origin
   if (g_camera) {
-    // Get time for rotation (use GLFW time or emscripten time)
-    float time;
-#if defined(__EMSCRIPTEN__)
-    time = emscripten_get_now() / 1000.0f;  // Convert ms to seconds
-#else
-    time = static_cast<float>(glfwGetTime());
-#endif
-    
     // Rotate camera around origin in a circle
     // Radius of rotation
     float radius = 3.0f;
@@ -54,7 +58,7 @@ void Render() {
     float height = 1.5f;
     
     // Calculate camera position in a circle around origin
-    float angle = time * 0.5f;  // Rotate slowly (0.5 radians per second)
+    float angle = currentTime * 0.5f;  // Rotate slowly (0.5 radians per second)
     float x = radius * cosf(angle);
     float z = radius * sinf(angle);
     
@@ -66,8 +70,10 @@ void Render() {
     g_camera->lookAt(eye, center, up);
   }
   
-  if (g_meshRenderer) {
-    g_meshRenderer->Render(pass, g_camera);
+  // Update and render scene
+  if (Scene::ins) {
+    Scene::ins->update(deltaTime);
+    Scene::ins->render(pass);
   } else {
     // Fallback to old triangle shader
     pass.SetPipeline(Shader::triangle->GetPipeline());
@@ -96,9 +102,15 @@ void Start() {
   g_camera = new Camera();
   g_camera->setAspect(static_cast<float>(kWidth) / static_cast<float>(kHeight));
   g_camera->setNearFar(0.1f, 100.0f);
+  Camera::main = g_camera;  // Set as main camera
   
-  // Create mesh renderer with 3D shader (vertexcolor) and triangle mesh
-  g_meshRenderer = new MeshRenderer(Mesh::triangle, Shader::vertexcolor);
+  // Create scene
+  g_scene = new Scene();
+  g_scene->initialize();
+  
+  // Create mesh entity and add to scene
+  EntMesh* meshEntity = new EntMesh(Mesh::triangle, Shader::vertexcolor, "Triangle");
+  g_scene->addEntity(meshEntity);
 
 #if defined(__EMSCRIPTEN__)
   emscripten_set_main_loop(Render, 0, false);
