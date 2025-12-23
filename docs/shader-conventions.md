@@ -34,7 +34,15 @@ Each semantic has a **fixed slot number** assigned via `VertexSemantic::getSlot(
 
 ## WGSL Shader Structure
 
-Shaders are embedded as C++ string literals in `Shader::buildPredefined()` and created via `WebGPUContext::CreateShaderModule()`.
+Shaders are stored in separate header files in `wasm/src/gsr/shaders/` and included in `Shader::buildPredefined()`. They are created via `WebGPUContext::CreateShaderModule()`.
+
+### File Organization
+
+Shader files use the `.wgsl.h` extension and contain WGSL shader code as C++ string constants:
+- `wasm/src/gsr/shaders/triangle.wgsl.h` - Triangle shader
+- `wasm/src/gsr/shaders/vertexcolor2d.wgsl.h` - Vertex color 2D shader
+
+Each shader file defines a `constexpr const char*` constant containing the WGSL code as a raw string literal. These constants are included in `Shader.cpp` and used when creating shader modules.
 
 ### Location Bindings
 

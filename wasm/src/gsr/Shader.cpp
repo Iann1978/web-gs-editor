@@ -1,5 +1,7 @@
 #include "Shader.h"
 #include "Mesh.h"
+#include "shaders/triangle.wgsl.h"
+#include "shaders/vertexcolor2d.wgsl.h"
 #include <iostream>
 #include <vector>
 
@@ -11,23 +13,11 @@ void Shader::buildPredefined() {
     std::cout << "Shader.buildPredefined" << std::endl;
 
     if (Shader::triangle == nullptr) {
-        // Triangle shader code from main.cpp
-        const char triangleShaderCode[] = R"(
-            @vertex fn vertexMain(@builtin(vertex_index) i : u32) ->
-              @builtin(position) vec4f {
-                const pos = array(vec2f(0, 1), vec2f(-1, -1), vec2f(1, -1));
-                return vec4f(pos[i], 0, 1);
-            }
-            @fragment fn fragmentMain() -> @location(0) vec4f {
-                return vec4f(1, 1, 0, 1);
-            }
-        )";
-
         // Get the WebGPU context
         WebGPUContext& context = WebGPUContext::Ref();
 
         // Create shader module
-        wgpu::ShaderModule shaderModule = context.CreateShaderModule(triangleShaderCode);
+        wgpu::ShaderModule shaderModule = context.CreateShaderModule(triangle_shader_code);
 
         // Create render pipeline
         wgpu::RenderPipeline pipeline = context.CreateRenderPipeline(shaderModule, context.format);
@@ -40,40 +30,10 @@ void Shader::buildPredefined() {
     
     // Create vertexcolor2d shader
     if (Shader::vertexcolor2d == nullptr) {
-        // Ported from vertexcolor2d.vert.glsl and vertexcolor2d.frag.glsl
-        // Adapted to use vec3 position (from Mesh::triangle) instead of vec2
-        // Using NDC coordinates directly (no uniform needed)
-        const char vertexcolor2dShaderCode[] = R"(
-            struct VertexInput {
-                @location(0) position: vec3<f32>,
-                @location(1) color: vec3<f32>,
-            };
-            
-            struct VertexOutput {
-                @builtin(position) position: vec4<f32>,
-                @location(0) color: vec3<f32>,
-            };
-            
-            @vertex
-            fn vertexMain(input: VertexInput) -> VertexOutput {
-                var output: VertexOutput;
-                // Use xy components from vec3 position (z is ignored for 2D)
-                // Position is already in NDC coordinates from Mesh::triangle
-                output.position = vec4<f32>(input.position.xy, 0.0, 1.0);
-                output.color = input.color;
-                return output;
-            }
-            
-            @fragment
-            fn fragmentMain(input: VertexOutput) -> @location(0) vec4<f32> {
-                return vec4<f32>(input.color, 1.0);
-            }
-        )";
-        
         WebGPUContext& context = WebGPUContext::Ref();
         
         // Create shader module
-        wgpu::ShaderModule shaderModule = context.CreateShaderModule(vertexcolor2dShaderCode);
+        wgpu::ShaderModule shaderModule = context.CreateShaderModule(vertexcolor2d_shader_code);
         
         // Create vertex buffer layouts for vec3 position and vec3 color
         // Use fixed slot numbers from VertexSemantic
