@@ -19,6 +19,9 @@ export class EmscriptenWasmModule {
   public static fn_gsr_scene_get_entity: ((scenePtr: number, idx: number) => number) | undefined = undefined
   public static fn_gsr_entity_get_name: ((entityPtr: number) => number) | undefined = undefined
   public static fn_gsr_entity_get_name_len: ((entityPtr: number) => number) | undefined = undefined
+  public static fn_gsr_entity_get_transform: ((entityPtr: number, bufferPtr: number) => void) | undefined = undefined
+  public static fn_malloc: ((size: number) => number) | undefined = undefined
+  public static fn_free: ((ptr: number) => void) | undefined = undefined
 
   static get config(): EmscriptenModuleConfig | undefined {
     return this._config
@@ -97,6 +100,18 @@ export class EmscriptenWasmModule {
         EmscriptenWasmModule.fn_gsr_entity_get_name_len = Module.cwrap('gsr_entity_get_name_len', 'number', ['number'])
         if (!EmscriptenWasmModule.fn_gsr_entity_get_name_len) {
           console.warn('EmscriptenWasmModule: gsr_entity_get_name_len function not found')
+        }
+        EmscriptenWasmModule.fn_gsr_entity_get_transform = Module.cwrap('gsr_entity_get_transform', null, ['number', 'number'])
+        if (!EmscriptenWasmModule.fn_gsr_entity_get_transform) {
+          console.warn('EmscriptenWasmModule: gsr_entity_get_transform function not found')
+        }
+        EmscriptenWasmModule.fn_malloc = Module._malloc || Module.malloc
+        if (!EmscriptenWasmModule.fn_malloc) {
+          console.warn('EmscriptenWasmModule: malloc function not found')
+        }
+        EmscriptenWasmModule.fn_free = Module._free || Module.free
+        if (!EmscriptenWasmModule.fn_free) {
+          console.warn('EmscriptenWasmModule: free function not found')
         }
 
         config.onLoadingChange?.(false)

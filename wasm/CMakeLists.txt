@@ -51,7 +51,7 @@ if(EMSCRIPTEN)
         "-sASYNCIFY=1" 
         "-sUSE_GLFW=3"
         # Export Init(), Start(), IsWebGPUInitialized(), and scene/entity accessors
-        "-sEXPORTED_FUNCTIONS=[\"_InitWebGPU\",\"_IsWebGPUInitialized\",\"_StartWebGPU\",\"_gsr_get_scene\",\"_gsr_scene_get_entity_count\",\"_gsr_scene_get_entity\",\"_gsr_entity_get_name\",\"_gsr_entity_get_name_len\"]"
+        "-sEXPORTED_FUNCTIONS=[\"_InitWebGPU\",\"_IsWebGPUInitialized\",\"_StartWebGPU\",\"_gsr_get_scene\",\"_gsr_scene_get_entity_count\",\"_gsr_scene_get_entity\",\"_gsr_entity_get_name\",\"_gsr_entity_get_name_len\",\"_gsr_entity_get_transform\",\"_malloc\",\"_free\"]"
         # Export runtime methods for calling functions and accessing memory
         "-sEXPORTED_RUNTIME_METHODS=[\"ccall\",\"cwrap\",\"wasmMemory\"]"
     )
