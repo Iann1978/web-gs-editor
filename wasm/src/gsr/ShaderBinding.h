@@ -5,7 +5,7 @@
 #include <vector>
 #include <glm/glm.hpp>
 
-struct ShaderBindingMember {
+struct UniformBufferMember {
     enum class Type {
         Unknown = 0,
         Float,
@@ -41,7 +41,7 @@ struct ShaderBinding {
     size_t size;         // Buffer size in bytes (for buffers)
     std::string name;    // Variable name (e.g., "u_uniforms")
     wgpu::ShaderStage visibility;  // Vertex, Fragment, or both
-    std::vector<ShaderBindingMember> members;  // For uniform buffers
+    std::vector<UniformBufferMember> members;  // For uniform buffers
 };
 
 struct UniformBuffer {

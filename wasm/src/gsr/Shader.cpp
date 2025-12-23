@@ -232,7 +232,7 @@ void Shader::setUniform(const std::string& bufferName, const std::string& member
     if (!binding) return;
     
     // Find member
-    ShaderBindingMember* member = nullptr;
+    UniformBufferMember* member = nullptr;
     for (auto& m : binding->members) {
         if (m.name == memberName) {
             member = &m;
@@ -240,7 +240,7 @@ void Shader::setUniform(const std::string& bufferName, const std::string& member
         }
     }
     
-    if (!member || member->type != ShaderBindingMember::Type::Float) {
+    if (!member || member->type != UniformBufferMember::Type::Float) {
         std::cerr << "Shader::setUniform: Member '" << memberName << "' not found or wrong type in buffer '" << bufferName << "'" << std::endl;
         return;
     }
@@ -256,7 +256,7 @@ void Shader::setUniform(const std::string& bufferName, const std::string& member
     ShaderBinding* binding = getBinding(bufferName);
     if (!binding) return;
     
-    ShaderBindingMember* member = nullptr;
+    UniformBufferMember* member = nullptr;
     for (auto& m : binding->members) {
         if (m.name == memberName) {
             member = &m;
@@ -264,7 +264,7 @@ void Shader::setUniform(const std::string& bufferName, const std::string& member
         }
     }
     
-    if (!member || member->type != ShaderBindingMember::Type::Float2) {
+    if (!member || member->type != UniformBufferMember::Type::Float2) {
         std::cerr << "Shader::setUniform: Member '" << memberName << "' not found or wrong type in buffer '" << bufferName << "'" << std::endl;
         return;
     }
@@ -280,7 +280,7 @@ void Shader::setUniform(const std::string& bufferName, const std::string& member
     ShaderBinding* binding = getBinding(bufferName);
     if (!binding) return;
     
-    ShaderBindingMember* member = nullptr;
+    UniformBufferMember* member = nullptr;
     for (auto& m : binding->members) {
         if (m.name == memberName) {
             member = &m;
@@ -288,7 +288,7 @@ void Shader::setUniform(const std::string& bufferName, const std::string& member
         }
     }
     
-    if (!member || member->type != ShaderBindingMember::Type::Float3) {
+    if (!member || member->type != UniformBufferMember::Type::Float3) {
         std::cerr << "Shader::setUniform: Member '" << memberName << "' not found or wrong type in buffer '" << bufferName << "'" << std::endl;
         return;
     }
@@ -304,7 +304,7 @@ void Shader::setUniform(const std::string& bufferName, const std::string& member
     ShaderBinding* binding = getBinding(bufferName);
     if (!binding) return;
     
-    ShaderBindingMember* member = nullptr;
+    UniformBufferMember* member = nullptr;
     for (auto& m : binding->members) {
         if (m.name == memberName) {
             member = &m;
@@ -312,7 +312,7 @@ void Shader::setUniform(const std::string& bufferName, const std::string& member
         }
     }
     
-    if (!member || member->type != ShaderBindingMember::Type::Float4) {
+    if (!member || member->type != UniformBufferMember::Type::Float4) {
         std::cerr << "Shader::setUniform: Member '" << memberName << "' not found or wrong type in buffer '" << bufferName << "'" << std::endl;
         return;
     }
@@ -328,7 +328,7 @@ void Shader::setUniform(const std::string& bufferName, const std::string& member
     ShaderBinding* binding = getBinding(bufferName);
     if (!binding) return;
     
-    ShaderBindingMember* member = nullptr;
+    UniformBufferMember* member = nullptr;
     for (auto& m : binding->members) {
         if (m.name == memberName) {
             member = &m;
@@ -336,7 +336,7 @@ void Shader::setUniform(const std::string& bufferName, const std::string& member
         }
     }
     
-    if (!member || member->type != ShaderBindingMember::Type::Mat3) {
+    if (!member || member->type != UniformBufferMember::Type::Mat3) {
         std::cerr << "Shader::setUniform: Member '" << memberName << "' not found or wrong type in buffer '" << bufferName << "'" << std::endl;
         return;
     }
@@ -352,7 +352,7 @@ void Shader::setUniform(const std::string& bufferName, const std::string& member
     ShaderBinding* binding = getBinding(bufferName);
     if (!binding) return;
     
-    ShaderBindingMember* member = nullptr;
+    UniformBufferMember* member = nullptr;
     for (auto& m : binding->members) {
         if (m.name == memberName) {
             member = &m;
@@ -360,7 +360,7 @@ void Shader::setUniform(const std::string& bufferName, const std::string& member
         }
     }
     
-    if (!member || member->type != ShaderBindingMember::Type::Mat4) {
+    if (!member || member->type != UniformBufferMember::Type::Mat4) {
         std::cerr << "Shader::setUniform: Member '" << memberName << "' not found or wrong type in buffer '" << bufferName << "'" << std::endl;
         return;
     }
@@ -376,7 +376,7 @@ void Shader::setUniform(const std::string& bufferName, const std::string& member
     ShaderBinding* binding = getBinding(bufferName);
     if (!binding) return;
     
-    ShaderBindingMember* member = nullptr;
+    UniformBufferMember* member = nullptr;
     for (auto& m : binding->members) {
         if (m.name == memberName) {
             member = &m;
@@ -384,7 +384,7 @@ void Shader::setUniform(const std::string& bufferName, const std::string& member
         }
     }
     
-    if (!member || member->type != ShaderBindingMember::Type::Int) {
+    if (!member || member->type != UniformBufferMember::Type::Int) {
         std::cerr << "Shader::setUniform: Member '" << memberName << "' not found or wrong type in buffer '" << bufferName << "'" << std::endl;
         return;
     }
@@ -400,7 +400,7 @@ void Shader::setUniform(const std::string& bufferName, const std::string& member
     ShaderBinding* binding = getBinding(bufferName);
     if (!binding) return;
     
-    ShaderBindingMember* member = nullptr;
+    UniformBufferMember* member = nullptr;
     for (auto& m : binding->members) {
         if (m.name == memberName) {
             member = &m;
@@ -408,7 +408,7 @@ void Shader::setUniform(const std::string& bufferName, const std::string& member
         }
     }
     
-    if (!member || member->type != ShaderBindingMember::Type::UInt) {
+    if (!member || member->type != UniformBufferMember::Type::UInt) {
         std::cerr << "Shader::setUniform: Member '" << memberName << "' not found or wrong type in buffer '" << bufferName << "'" << std::endl;
         return;
     }
@@ -424,7 +424,7 @@ void Shader::setUniform(const std::string& bufferName, const std::string& member
     ShaderBinding* binding = getBinding(bufferName);
     if (!binding) return;
     
-    ShaderBindingMember* member = nullptr;
+    UniformBufferMember* member = nullptr;
     for (auto& m : binding->members) {
         if (m.name == memberName) {
             member = &m;
@@ -432,7 +432,7 @@ void Shader::setUniform(const std::string& bufferName, const std::string& member
         }
     }
     
-    if (!member || member->type != ShaderBindingMember::Type::Bool) {
+    if (!member || member->type != UniformBufferMember::Type::Bool) {
         std::cerr << "Shader::setUniform: Member '" << memberName << "' not found or wrong type in buffer '" << bufferName << "'" << std::endl;
         return;
     }
