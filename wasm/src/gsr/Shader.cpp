@@ -21,7 +21,7 @@ void Shader::buildPredefined() {
         )";
 
         // Get the WebGPU context
-        WebGPUContext& context = WebGPUContext::MainRef();
+        WebGPUContext& context = WebGPUContext::Ref();
 
         // Create shader module
         wgpu::ShaderModule shaderModule = context.CreateShaderModule(triangleShaderCode);

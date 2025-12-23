@@ -4,15 +4,15 @@
 #include <string>
 #include <sstream>
 
-WebGPUContext* WebGPUContext::main = nullptr;
+WebGPUContext* WebGPUContext::ins = nullptr;
 
-WebGPUContext& WebGPUContext::MainRef() {
-    return *main;
+WebGPUContext& WebGPUContext::Ref() {
+    return *ins;
 }
 
 WebGPUContext::WebGPUContext() {
-    if (main == nullptr)
-        main = this;
+    if (ins == nullptr)
+        ins = this;
 }
 
 WebGPUContext::~WebGPUContext() {

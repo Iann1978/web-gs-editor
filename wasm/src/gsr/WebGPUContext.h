@@ -42,8 +42,8 @@ public:
     // Cleanup
     void Destroy();
     
-    // Singleton pattern (like VulkanContext)
-    static WebGPUContext* main;
-    static WebGPUContext& MainRef();
+    // Singleton pattern
+    static WebGPUContext* ins;
+    static WebGPUContext& Ref();
 };
 
