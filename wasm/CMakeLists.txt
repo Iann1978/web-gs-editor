@@ -20,6 +20,7 @@ set(APP_SOURCES
     src/gsr/Shader.cpp
     src/gsr/Mesh.cpp
     src/gsr/MeshRenderer.cpp
+    src/gsr/Transform.cpp
 )
 
 # Source files for test (simple WASM module)
@@ -40,7 +41,7 @@ if(EMSCRIPTEN)
     
     # Configure app target (non-modularized for direct script loading)
     set_target_properties(app PROPERTIES SUFFIX ".js")
-    target_link_libraries(app PRIVATE emdawnwebgpu_cpp webgpu_glfw)
+    target_link_libraries(app PRIVATE emdawnwebgpu_cpp webgpu_glfw glm::glm)
     target_link_options(app PRIVATE 
         "-sASYNCIFY=1" 
         "-sUSE_GLFW=3"
@@ -63,7 +64,7 @@ if(EMSCRIPTEN)
     )
 else()
     # For native builds, link Dawn and GLFW for app
-    target_link_libraries(app PRIVATE webgpu_dawn webgpu_glfw glfw)
+    target_link_libraries(app PRIVATE webgpu_dawn webgpu_glfw glfw glm::glm)
     # Test target doesn't need any special libraries for native builds
 endif()
 
