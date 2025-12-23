@@ -21,6 +21,7 @@ set(APP_SOURCES
     src/gsr/Mesh.cpp
     src/gsr/MeshRenderer.cpp
     src/gsr/Transform.cpp
+    src/gsr/Camera.cpp
 )
 
 # Source files for test (simple WASM module)
