@@ -9,11 +9,11 @@
 #include "WebGPUContext.h"
 #include "Shader.h"
 #include "Mesh.h"
+#include "MeshRenderer.h"
 
 WebGPUContext* g_context = nullptr;
 GLFWwindow* g_window = nullptr;
-Mesh* g_triangleMesh = nullptr;
-Shader* g_meshShader = nullptr;
+MeshRenderer* g_meshRenderer = nullptr;
 
 const uint32_t kWidth = 512;
 const uint32_t kHeight = 512;
@@ -32,10 +32,8 @@ void Render() {
   wgpu::CommandEncoder encoder = g_context->CreateCommandEncoder();
   wgpu::RenderPassEncoder pass = encoder.BeginRenderPass(&renderpass);
   
-  if (g_meshShader && g_triangleMesh) {
-    pass.SetPipeline(g_meshShader->GetPipeline());
-    Shader::BindMeshBuffers(pass, g_triangleMesh, g_meshShader);
-    pass.Draw(g_triangleMesh->vertexCount);
+  if (g_meshRenderer) {
+    g_meshRenderer->Render(pass);
   } else {
     // Fallback to old triangle shader
     pass.SetPipeline(Shader::triangle->GetPipeline());
@@ -60,9 +58,8 @@ void Start() {
   Shader::buildPredefined();
   Mesh::buildPredefined();
   
-  // Use predefined vertexcolor2d shader with triangle mesh
-  g_meshShader = Shader::vertexcolor2d;
-  g_triangleMesh = Mesh::triangle;
+  // Create mesh renderer with predefined shader and mesh
+  g_meshRenderer = new MeshRenderer(Mesh::triangle, Shader::vertexcolor2d);
 
 #if defined(__EMSCRIPTEN__)
   emscripten_set_main_loop(Render, 0, false);

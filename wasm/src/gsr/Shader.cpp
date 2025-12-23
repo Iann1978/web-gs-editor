@@ -1,5 +1,4 @@
 #include "Shader.h"
-#include "Mesh.h"
 #include "shaders/triangle.wgsl.h"
 #include "shaders/vertexcolor2d.wgsl.h"
 #include <iostream>
@@ -89,27 +88,6 @@ void Shader::buildPredefined() {
         Shader::vertexcolor2d->layout.add(VertexSemantic::POSITION, VertexAttributeType::TYPE::FLOAT3);
         Shader::vertexcolor2d->layout.add(VertexSemantic::COLOR, VertexAttributeType::TYPE::FLOAT3);
         Shader::vertexcolor2d->pipeline = pipeline;
-    }
-}
-
-void Shader::BindMeshBuffers(wgpu::RenderPassEncoder& pass, Mesh* mesh, const Shader* shader) {
-    if (!mesh || !shader) return;
-    
-    // Bind each channel buffer using the semantic's fixed slot number
-    // This ensures correct binding regardless of map iteration order
-    for (const auto& [semantic, attr] : shader->layout.getAttributes()) {
-        uint32_t slot = VertexSemantic::getSlot(semantic);
-        if (slot == UINT32_MAX) continue; // Skip invalid semantics
-        
-        wgpu::Buffer buffer = mesh->getBuffer(semantic);
-        if (buffer) {
-            pass.SetVertexBuffer(slot, buffer, 0, wgpu::kWholeSize);
-        }
-    }
-    
-    // Bind index buffer if present
-    if (mesh->indices) {
-        pass.SetIndexBuffer(mesh->indices, mesh->indexFormat, 0, wgpu::kWholeSize);
     }
 }
 
