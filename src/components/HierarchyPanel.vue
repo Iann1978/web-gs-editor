@@ -26,13 +26,16 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed } from 'vue'
+import { ref, computed, onMounted } from 'vue'
 import { useSceneStore } from '@/stores/scene'
 import TreeNode from './TreeNode.vue'
 import type { Entity } from '@/types/editor'
 
 const sceneStore = useSceneStore()
 const searchQuery = ref('')
+
+// Data is populated by ViewportCanvas after WASM init; no eager load here.
+onMounted(() => {})
 
 // Filter entities based on search query
 const filteredTree = computed(() => {

@@ -35,8 +35,8 @@
 import { ref, computed, onMounted, onUnmounted, watch } from 'vue'
 import { useEditorStore } from '@/stores/editor'
 import { useSceneStore } from '@/stores/scene'
+import { gsr } from '@/core/gsr/gsr'
 import { EmscriptenWasmModule } from '@/core/wasm/EmscriptenWasmModule'
-import type { Entity } from '@/types/editor'
 
 const editorStore = useEditorStore()
 const sceneStore = useSceneStore()
@@ -46,26 +46,6 @@ const error = ref<string>('')
 const loading = ref<boolean>(true)
 const isDragging = ref(false)
 const lastMousePos = ref({ x: 0, y: 0 })
-
-const pushTriangleEntityFromViewport = () => {
-  const entity: Entity = {
-    id: 'triangle-1',
-    name: 'Triangle',
-    type: 'mesh',
-    transform: {
-      position: [0, 0, 0],
-      rotation: [0, 0, 0, 1],
-      scale: [1, 1, 1]
-    },
-    visible: true,
-    locked: false,
-    children: []
-  }
-
-  if (!sceneStore.entities.find((e) => e.id === entity.id)) {
-    sceneStore.addEntity(entity)
-  }
-}
 
 const currentToolName = computed(() => {
   return editorStore.currentTool.charAt(0).toUpperCase() + editorStore.currentTool.slice(1)
@@ -137,15 +117,43 @@ onMounted(async () => {
 
           console.log('WebGPU initialization complete, starting render loop...')
 
+          // Populate scene store from WASM scene
+          const scene = gsr.getScene()
+          console.log('Scene:', scene)
+          console.log('Scene ptr:', scene.ptr)
+          if (scene && scene.ptr) {
+            const count = scene.getEntityCount()
+            console.log('Entities Count:', count)
+            const list = []
+            for (let i = 0; i < count; i++) {
+              const ent = scene.getEntity(i)
+              if (!ent) continue
+              const name = ent.getName() || `Entity ${i}`
+              list.push({
+                id: `native-${i}`,
+                name,
+                type: 'other' as const,
+                transform: {
+                  position: [0, 0, 0] as [number, number, number],
+                  rotation: [0, 0, 0, 1] as [number, number, number, number],
+                  scale: [1, 1, 1] as [number, number, number]
+                },
+                visible: true,
+                locked: false,
+                children: []
+              })
+            }
+            sceneStore.clearScene()
+            list.forEach((e) => sceneStore.addEntity(e))
+          }
+
           // Start render loop
           if (module._StartWebGPU) {
             console.log('Calling StartWebGPU()...')
             module._StartWebGPU()
-            pushTriangleEntityFromViewport()
           } else if (module.ccall) {
             console.log('Calling StartWebGPU() via ccall...')
             module.ccall('StartWebGPU', null, [])
-            pushTriangleEntityFromViewport()
           }
         } catch (err) {
           console.error('Error initializing WebGPU:', err)

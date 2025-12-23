@@ -28,3 +28,7 @@ protected:
     bool visible = true;
 };
 
+// Expose selected Entity fields to JS/WASM side.
+extern "C" const char* gsr_entity_get_name(Entity* entity);
+extern "C" size_t gsr_entity_get_name_len(Entity* entity);
+

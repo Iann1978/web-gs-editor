@@ -16,34 +16,12 @@
 import { ref, onMounted, onUnmounted } from 'vue'
 import { EmscriptenWasmModule } from '../core/wasm/EmscriptenWasmModule'
 import { useSceneStore } from '@/stores/scene'
-import type { Entity } from '@/types/editor'
+import { gsr } from '@/core/gsr/gsr'
 
 const canvasRef = ref<HTMLCanvasElement | null>(null)
 const error = ref<string>('')
 const loading = ref<boolean>(true)
 const sceneStore = useSceneStore()
-
-const pushTriangleEntity = () => {
-  const entity: Entity = {
-    id: 'triangle-1',
-    name: 'Triangle',
-    type: 'mesh',
-    transform: {
-      position: [0, 0, 0],
-      rotation: [0, 0, 0, 1],
-      scale: [1, 1, 1]
-    },
-    visible: true,
-    locked: false,
-    children: []
-  }
-
-  // Avoid duplicates if the panel re-renders
-  if (!sceneStore.entities.find((e) => e.id === entity.id)) {
-    sceneStore.addEntity(entity)
-  }
-}
-
 onMounted(async () => {
   if (!canvasRef.value) {
     error.value = 'Canvas element not found'
@@ -110,18 +88,48 @@ onMounted(async () => {
 
           console.log('WebGPU initialization complete, starting render loop...')
 
+
+          
+           // Populate scene store from WASM scene
+           const scene = gsr.getScene()
+          if (scene && scene.ptr) {
+            const count = scene.getEntityCount()
+            console.log('Entities Count:', count)
+            const list = []
+            for (let i = 0; i < count; i++) {
+              const ent = scene.getEntity(i)
+              if (!ent) continue
+              const name = ent.getName() || `Entity ${i}`
+              list.push({
+                id: `native-${i}`,
+                name,
+                type: 'other' as const,
+                transform: {
+                  position: [0, 0, 0] as [number, number, number],
+                  rotation: [0, 0, 0, 1] as [number, number, number, number],
+                  scale: [1, 1, 1] as [number, number, number]
+                },
+                visible: true,
+                locked: false,
+                children: []
+              })
+            }
+            sceneStore.clearScene()
+            list.forEach((e) => sceneStore.addEntity(e))
+          }
+          
           // Then call StartWebGPU()
           if (module._StartWebGPU) {
             console.log('Calling StartWebGPU()...')
             module._StartWebGPU()
-            pushTriangleEntity()
           } else if (module.ccall) {
             console.log('Calling StartWebGPU() via ccall...')
             module.ccall('StartWebGPU', null, [])
-            pushTriangleEntity()
           } else {
             console.warn('StartWebGPU() function not found. Make sure it is exported in CMakeLists.txt')
           }
+
+
         } catch (err) {
           console.error('Error initializing WebGPU:', err)
           error.value = `Failed to start WebGPU: ${err instanceof Error ? err.message : 'Unknown error'}`
