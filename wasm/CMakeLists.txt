@@ -18,6 +18,7 @@ set(APP_SOURCES
     src/gsr/WebGPUContext.cpp
     src/gsr/VertexAttribute.cpp
     src/gsr/Shader.cpp
+    src/gsr/ShaderParser.cpp
     src/gsr/Mesh.cpp
     src/gsr/MeshRenderer.cpp
     src/gsr/Transform.cpp

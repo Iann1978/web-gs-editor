@@ -36,6 +36,11 @@ void MeshRenderer::Render(wgpu::RenderPassEncoder& pass) {
     // Set the pipeline
     pass.SetPipeline(shader->GetPipeline());
     
+    // Bind uniforms (bind group 0 by default, can be extended for multiple groups)
+    if (!shader->bindings.empty()) {
+        shader->bindUniforms(pass, 0);
+    }
+    
     // Bind mesh buffers to the render pass
     BindBuffers(pass);
     
