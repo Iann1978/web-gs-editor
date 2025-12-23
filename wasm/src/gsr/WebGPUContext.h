@@ -1,0 +1,62 @@
+#pragma once
+
+#include <webgpu/webgpu_cpp.h>
+#include <webgpu/webgpu_glfw.h>
+#include <GLFW/glfw3.h>
+#include <vector>
+
+class VertexLayout;
+
+class WebGPUContext {
+public:
+    wgpu::Instance instance;
+    wgpu::Adapter adapter;
+    wgpu::Device device;
+    wgpu::Queue queue;
+    wgpu::Surface surface;
+    wgpu::TextureFormat format;
+    
+    uint32_t width = 512;
+    uint32_t height = 512;
+    bool isInitialized = false;
+
+public:
+    WebGPUContext();
+    ~WebGPUContext();
+    
+    // Initialization
+    void Initialize();
+    void CreateSurface(GLFWwindow* window);
+    void ConfigureSurface();
+    
+    // Resource creation helpers
+    wgpu::ShaderModule CreateShaderModule(const char* wgslCode);
+    wgpu::RenderPipeline CreateRenderPipeline(wgpu::ShaderModule shaderModule, wgpu::TextureFormat targetFormat);
+    wgpu::Buffer CreateBuffer(const void* data, size_t size, wgpu::BufferUsage usage);
+    
+    // Helper to create vertex buffer layouts from VertexLayout
+    // Note: The returned layouts contain pointers to attributes stored in the returned vector
+    // Both must be kept alive until the pipeline is created
+    struct VertexBufferLayoutData {
+        std::vector<wgpu::VertexAttribute> attributes;
+        std::vector<wgpu::VertexBufferLayout> layouts;
+    };
+    VertexBufferLayoutData CreateVertexBufferLayouts(const VertexLayout& layout);
+    
+    // Rendering operations
+    wgpu::SurfaceTexture GetCurrentSurfaceTexture();
+    wgpu::CommandEncoder CreateCommandEncoder();
+    void SubmitCommandBuffer(wgpu::CommandBuffer commandBuffer);
+    
+    // Surface operations
+    void Present();
+    void ProcessEvents();
+    
+    // Cleanup
+    void Destroy();
+    
+    // Singleton pattern
+    static WebGPUContext* ins;
+    static WebGPUContext& Ref();
+};
+

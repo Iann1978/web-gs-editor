@@ -5,13 +5,27 @@ project(gs_editor_wasm)
 set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
+# Add GLM from git submodule
+add_subdirectory(3dr/glm)
+
 # Add Dawn subdirectory with dependency fetching
 set(DAWN_FETCH_DEPENDENCIES ON)
 add_subdirectory("dawn" EXCLUDE_FROM_ALL)
 
 # Source files for app (WebGPU)
 set(APP_SOURCES
-    src/main.cpp
+    src/gsr/main.cpp
+    src/gsr/WebGPUContext.cpp
+    src/gsr/VertexAttribute.cpp
+    src/gsr/Shader.cpp
+    src/gsr/ShaderParser.cpp
+    src/gsr/Mesh.cpp
+    src/gsr/MeshRenderer.cpp
+    src/gsr/Transform.cpp
+    src/gsr/Camera.cpp
+    src/gsr/Entity.cpp
+    src/gsr/EntMesh.cpp
+    src/gsr/Scene.cpp
 )
 
 # Source files for test (simple WASM module)
@@ -32,7 +46,7 @@ if(EMSCRIPTEN)
     
     # Configure app target (non-modularized for direct script loading)
     set_target_properties(app PROPERTIES SUFFIX ".js")
-    target_link_libraries(app PRIVATE emdawnwebgpu_cpp webgpu_glfw)
+    target_link_libraries(app PRIVATE emdawnwebgpu_cpp webgpu_glfw glm::glm)
     target_link_options(app PRIVATE 
         "-sASYNCIFY=1" 
         "-sUSE_GLFW=3"
@@ -55,7 +69,7 @@ if(EMSCRIPTEN)
     )
 else()
     # For native builds, link Dawn and GLFW for app
-    target_link_libraries(app PRIVATE webgpu_dawn webgpu_glfw glfw)
+    target_link_libraries(app PRIVATE webgpu_dawn webgpu_glfw glfw glm::glm)
     # Test target doesn't need any special libraries for native builds
 endif()
 

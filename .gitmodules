@@ -1,3 +1,6 @@
 [submodule "wasm/dawn"]
 	path = wasm/dawn
 	url = https://github.com/google/dawn.git
+[submodule "wasm/3dr/glm"]
+	path = wasm/3dr/glm
+	url = https://github.com/g-truc/glm.git
