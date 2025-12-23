@@ -50,10 +50,10 @@ if(EMSCRIPTEN)
     target_link_options(app PRIVATE 
         "-sASYNCIFY=1" 
         "-sUSE_GLFW=3"
-        # Export Init(), Start(), and IsWebGPUInitialized() functions for manual calling
-        "-sEXPORTED_FUNCTIONS=[\"_InitWebGPU\",\"_IsWebGPUInitialized\",\"_StartWebGPU\"]"
-        # Export runtime methods for calling functions
-        "-sEXPORTED_RUNTIME_METHODS=[\"ccall\",\"cwrap\"]"
+        # Export Init(), Start(), IsWebGPUInitialized(), and scene/entity accessors
+        "-sEXPORTED_FUNCTIONS=[\"_InitWebGPU\",\"_IsWebGPUInitialized\",\"_StartWebGPU\",\"_gsr_get_scene\",\"_gsr_scene_get_entity_count\",\"_gsr_scene_get_entity\",\"_gsr_entity_get_name\",\"_gsr_entity_get_name_len\",\"_gsr_entity_get_transform\",\"_malloc\",\"_free\"]"
+        # Export runtime methods for calling functions and accessing memory
+        "-sEXPORTED_RUNTIME_METHODS=[\"ccall\",\"cwrap\",\"wasmMemory\"]"
     )
     
     # Configure test target (modularized ES6 module)

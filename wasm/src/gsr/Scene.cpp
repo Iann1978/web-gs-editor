@@ -2,6 +2,9 @@
 #include <algorithm>
 #include <iostream>
 #include <cassert>
+#if defined(__EMSCRIPTEN__)
+#include <emscripten/emscripten.h>
+#endif
 
 Scene* Scene::ins = nullptr;
 
@@ -81,5 +84,28 @@ Entity* Scene::getEntity(size_t index) const {
         return entities[index];
     }
     return nullptr;
+}
+
+extern "C" {
+#if defined(__EMSCRIPTEN__)
+EMSCRIPTEN_KEEPALIVE
+#endif
+Scene* gsr_get_scene() {
+    return Scene::ins;
+}
+
+#if defined(__EMSCRIPTEN__)
+EMSCRIPTEN_KEEPALIVE
+#endif
+size_t gsr_scene_get_entity_count(Scene* scene) {
+    return scene->getEntityCount();
+}
+
+#if defined(__EMSCRIPTEN__)
+EMSCRIPTEN_KEEPALIVE
+#endif
+Entity* gsr_scene_get_entity(Scene* scene, size_t index) {
+    return scene->getEntity(index);
+}
 }
 

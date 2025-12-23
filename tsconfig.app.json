@@ -5,6 +5,7 @@
     "types": ["vite/client"],
     "baseUrl": ".",
     "paths": {
+      "@/*": ["./src/*"],
       "@wasm/*": ["wasm/pkg/*"]
     },
 
