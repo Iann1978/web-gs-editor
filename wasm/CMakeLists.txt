@@ -6,7 +6,7 @@ set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
 # Add GLM from git submodule
-add_subdirectory(third_party/glm)  # Change to 3dr/glm if you used that path
+add_subdirectory(3dr/glm)
 
 # Add Dawn subdirectory with dependency fetching
 set(DAWN_FETCH_DEPENDENCIES ON)
